@@ -1,8 +1,10 @@
 package io.kamzy.breezebill;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
@@ -10,16 +12,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
@@ -30,15 +38,9 @@ import io.kamzy.breezebill.models.Bills;
 
 public class Dashboard extends AppCompatActivity {
 
-    private TabLayout tabLayout;
-    private RecyclerView recyclerView;
-    private BillAdapter billAdapter;
     Context ctx;
-    List<Bills> bills;
-    ImageView hideBalance;
-    TextView balanceAmount;
-    String CURRENT_BALANCE;
-    boolean isBalanceHidden = false; // Track balance state
+    BottomNavigationView bottomNavigationView;
+    private FragmentManager fragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,11 +54,8 @@ public class Dashboard extends AppCompatActivity {
         });
 
         ctx = this;
-        hideBalance = findViewById(R.id.hide_balance);
-        balanceAmount = findViewById(R.id.balanceAmount);
-        CURRENT_BALANCE = balanceAmount.getText().toString();
-        tabLayout = findViewById(R.id.tabLayout);
-        recyclerView = findViewById(R.id.recyclerView);
+        bottomNavigationView = findViewById(R.id.bottomNavigation);
+        fragmentManager = getSupportFragmentManager();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
@@ -75,75 +74,54 @@ public class Dashboard extends AppCompatActivity {
             }
         }
 
-        // Set up RecyclerView
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(ctx);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        // Set default fragment
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new HomeFragment())
+                .commit();
 
-        billAdapter = new BillAdapter(bills, ctx);
-        recyclerView.setAdapter(billAdapter);
 
-//       Add a DividerItemDecoration to control spacing
-        DividerItemDecoration divider = new DividerItemDecoration(recyclerView.getContext(), LinearLayoutManager.VERTICAL);
-        recyclerView.addItemDecoration(divider);
-
-        tabLayout.addTab(tabLayout.newTab().setText("My Bills"));
-        tabLayout.addTab(tabLayout.newTab().setText("Others"));
-        tabLayout.addTab(tabLayout.newTab().setText("View More"));
-
-        // Load initial data for "My Bills"
-        loadBills("My Bills");
-
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        // Bottom Navigation
+        bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                loadBills(tab.getText().toString());
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                handleNavigationItemSelected(item);
+                return true;
             }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
-
-        hideBalance.setOnClickListener(v ->{
-
-            // Resource IDs for clarity
-            final int HIDDEN_BALANCE_ICON = R.drawable.hide_balance;
-            final int VISIBLE_BALANCE_ICON = R.drawable.eye;
-            // Toggle the state
-            isBalanceHidden = !isBalanceHidden;
-            int iconResId = isBalanceHidden ? VISIBLE_BALANCE_ICON : HIDDEN_BALANCE_ICON;
-            if (iconResId == VISIBLE_BALANCE_ICON){
-                balanceAmount.setText("******");
-            } else {
-                balanceAmount.setText(CURRENT_BALANCE);
-            }
-            hideBalance.setImageResource(iconResId);
         });
 
     }
 
-    // Load bills based on selected tab
-    private void loadBills(String tabName) {
-        List<Bills> bills = new ArrayList<>();
-        if (tabName.equals("My Bills")) {
-            bills.add(new Bills("IFT 503 Manual", "3,000"));
-            bills.add(new Bills("Dept. Dues", "₦10,000"));
-        } else if (tabName.equals("Others")) {
-            bills.add(new Bills("Library Fine", "₦500"));
-            bills.add(new Bills("Sports Fee", "₦1,200"));
-        } else if (tabName.equals("View More")) {
-            bills.add(new Bills("Convocation Fee", "₦5,000"));
-            bills.add(new Bills("Health Fee", "₦2,500"));
+
+    // Use this:
+    private boolean handleNavigationItemSelected(@NonNull MenuItem item) {
+        Fragment selectedFragment = getFragmentForMenuItem(item);
+
+        if (selectedFragment != null) {
+            showFragment(selectedFragment);
         }
 
-        // Update RecyclerView data
-        billAdapter.updateData(bills);
+        return true;
     }
+
+    private Fragment getFragmentForMenuItem(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.home) {
+            return new HomeFragment();
+        } else if (itemId == R.id.bills) {
+            return new BillFragment();
+        } else if (itemId == R.id.group) {
+            return new GroupFragment();
+        } else if (itemId == R.id.profile) {
+            return new ProfileFragment();
+        } else {
+            return null;
+        }
+    }
+
+    private void showFragment(Fragment fragment) {
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.fragment_container, fragment);
+        transaction.commit();
+    }
+
 }

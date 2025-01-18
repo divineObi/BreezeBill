@@ -4,4 +4,6 @@
     <string name="notification_button">notification_button</string>
     <string name="eye_button">eye_button</string>
     <string name="fund_wallet_button">fund_wallet_button</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

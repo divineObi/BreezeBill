@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".HomeFragment">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/header_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/primary_100">
+
+            <!-- Top Bar -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <!-- User Info -->
+                <TextView
+                    android:id="@+id/userGreeting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hi, Kelemoni"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/userMessage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Welcome, let's start making payments"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
+                    android:layout_below="@id/userGreeting"
+                    android:layout_marginTop="4dp"/>
+
+                <!-- Icons -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_alignParentEnd="true">
+
+                    <ImageView
+                        android:id="@+id/callIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/call"
+                        android:contentDescription="@string/call_button"
+                        android:layout_marginEnd="12dp"/>
+
+                    <ImageView
+                        android:id="@+id/notificationIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/notification"
+                        android:contentDescription="@string/notification_button"/>
+                </LinearLayout>
+            </RelativeLayout>
+
+            <!-- Balance Section -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:id="@+id/balance_section_row_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/availableBalanceLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Available Balance"
+                        android:textSize="14sp"
+                        android:textColor="@color/white"/>
+
+                    <ImageView
+                        android:id="@+id/hide_balance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/hide_balance"
+                        android:contentDescription="@string/eye_button"
+                        app:tint="@color/white"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_marginStart="5dp"/>
+
+                    <TextView
+                        android:id="@+id/TransactionHistoryLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Transaction History"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:textSize="14sp"
+                        android:textColor="@color/white"
+                        android:clickable="true"
+                        android:focusable="true"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/balance_section_row_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_below="@+id/balance_section_row_1"
+                    android:layout_marginTop="4dp">
+
+                    <TextView
+                        android:id="@+id/balanceAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="₦200,000.00"
+                        android:layout_weight="1"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/white" />
+                    <Button
+                        android:id="@+id/addMoneyButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Add money"
+                        android:textStyle="bold"
+                        android:backgroundTint="@color/white"
+                        android:textColor="@color/primary_100" />
+                </LinearLayout>
+            </RelativeLayout>
+
+
+        </LinearLayout>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:id="@+id/actionButtons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_below="@id/header_section"
+            android:padding="16dp"
+            android:weightSum="4">
+
+            <!--            Fund wallet Button-->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageButton
+                    android:id="@+id/fundWalletButton"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:padding="12dp"
+                    android:src="@drawable/fund_wallet_3x"
+                    style="@style/KeyButtonStyle"
+                    android:contentDescription="@string/fund_wallet_button"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fund \nWallet"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:textColor="@color/primary_dark"
+                    android:layout_marginTop="4dp"
+                    android:textSize="14sp"/>
+            </LinearLayout>
+            <!--            create Bill Button -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageButton
+                    android:id="@+id/createBillButton"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:padding="12dp"
+                    android:src="@drawable/create_bill"
+                    style="@style/KeyButtonStyle"
+                    android:contentDescription="@string/fund_wallet_button"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Create\nBill"
+                    android:textAlignment="center"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary_dark"
+                    android:layout_marginTop="4dp"
+                    android:textSize="14sp"/>
+            </LinearLayout>
+            <!--            Create Group button-->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageButton
+                    android:id="@+id/createGroupButton"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:padding="12dp"
+                    android:src="@drawable/create_group"
+                    style="@style/KeyButtonStyle"
+                    android:contentDescription="@string/fund_wallet_button"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Create\nGroup"
+                    android:textAlignment="center"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary_dark"
+                    android:layout_marginTop="4dp"
+                    android:textSize="14sp"/>
+            </LinearLayout>
+            <!--            Transfer Button-->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageButton
+                    android:id="@+id/transferButton"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:padding="12dp"
+                    android:src="@drawable/transfer"
+                    style="@style/KeyButtonStyle"
+                    android:contentDescription="@string/fund_wallet_button"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Transfer"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary_dark"
+                    android:layout_marginTop="4dp"
+                    android:textSize="14sp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- My Bills Section -->
+        <LinearLayout
+            android:id="@+id/BillList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_below="@id/actionButtons"
+            android:padding="16dp">
+
+            <!-- Tab Layout -->
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tabLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                app:tabIndicatorColor="@color/primary_100"
+                app:tabSelectedTextColor="@color/primary_100"
+                app:tabTextColor="@color/primary_dark" />
+
+            <!-- RecyclerView for displaying bills -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:padding="0dp"
+                tools:listitem="@layout/bill_item"  />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</FrameLayout>
