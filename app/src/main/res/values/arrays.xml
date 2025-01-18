@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="faculty_list">
+        <item>SICT</item>
+        <item>SAAT</item>
+        <item>SOPS</item>
+        <item>SOBS</item>
+        <item>SEET</item>
+        <item>SESET</item>
+        <item>SMAT</item>
+        <item>SOHT</item>
+        <item>SOES</item>
+    </string-array>
+
+    <string-array name="gender_list">
+        <item>Male</item>
+        <item>Female</item>
+    </string-array>
+
+    <string-array name="SICT_list">
+        <item>Information Technology</item>
+        <item>Computer Science</item>
+        <item>Software Engineering</item>
+        <item>Cyber Security</item>
+    </string-array>
+
+    <string-array name="SOPS_list">
+        <item>Statistics</item>
+        <item>Physics</item>
+        <item>Mathematics</item>
+        <item>Industrial Chemistry</item>
+    </string-array>
+</resources>

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Breezebill</string>
+    <string name="call_button">call_button</string>
+    <string name="notification_button">notification_button</string>
+    <string name="eye_button">eye_button</string>
+    <string name="fund_wallet_button">fund_wallet_button</string>
+</resources>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background"
+    tools:context=".Passcode">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="20dp">
+
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Enter your passcode"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"
+            android:textColor="@android:color/black"/>
+
+        <!-- Dots for Passcode -->
+        <LinearLayout
+            android:id="@+id/passcodeDots"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="32dp">
+
+            <!-- Four dots -->
+            <View
+                android:id="@+id/dot1"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:background="@drawable/dot_empty"
+                android:layout_margin="5dp"/>
+
+            <View
+                android:id="@+id/dot2"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:background="@drawable/dot_empty"
+                android:layout_margin="5dp"/>
+
+            <View
+                android:id="@+id/dot3"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:background="@drawable/dot_empty"
+                android:layout_margin="5dp"/>
+
+            <View
+                android:id="@+id/dot4"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:background="@drawable/dot_empty"
+                android:layout_margin="5dp"/>
+        </LinearLayout>
+
+        <!-- Numeric Keypad -->
+        <GridLayout
+            android:id="@+id/keypad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:columnCount="3"
+            android:rowCount="4"
+            android:padding="10dp"
+            android:useDefaultMargins="true">
+
+            <!-- Buttons 1-9 -->
+            <Button android:id="@+id/btn1" style="@style/KeyButtonStyle" android:text="1"/>
+            <Button android:id="@+id/btn2" style="@style/KeyButtonStyle" android:text="2"/>
+            <Button android:id="@+id/btn3" style="@style/KeyButtonStyle" android:text="3"/>
+            <Button android:id="@+id/btn4" style="@style/KeyButtonStyle" android:text="4"/>
+            <Button android:id="@+id/btn5" style="@style/KeyButtonStyle" android:text="5"/>
+            <Button android:id="@+id/btn6" style="@style/KeyButtonStyle" android:text="6"/>
+            <Button android:id="@+id/btn7" style="@style/KeyButtonStyle" android:text="7"/>
+            <Button android:id="@+id/btn8" style="@style/KeyButtonStyle" android:text="8"/>
+            <Button android:id="@+id/btn9" style="@style/KeyButtonStyle" android:text="9"/>
+
+            <!-- Placeholder, 0, Backspace -->
+            <Space android:layout_width="96dp" android:layout_height="96dp"/>
+            <Button android:id="@+id/btn0" style="@style/KeyButtonStyle" android:text="0"/>
+            <ImageButton
+                android:id="@+id/btnBackspace"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                style="@style/KeyButtonStyle"
+                android:src="@drawable/back_button"
+                android:contentDescription="backspace_button"/>
+        </GridLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
