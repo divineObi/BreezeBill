@@ -78,23 +78,6 @@
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Email -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/EmailInputLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Email Address"
-            android:layout_marginTop="16dp"
-            style="@style/TextInputLayoutStyle">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/EmailEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:inputType="textEmailAddress" />
-        </com.google.android.material.textfield.TextInputLayout>
-
         <!-- Password -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/passwordInputLayout"

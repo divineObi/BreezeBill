@@ -1,10 +1,15 @@
 package io.kamzy.breezebill;
 
+import static io.kamzy.breezebill.tools.Tools.baseURL;
+import static io.kamzy.breezebill.tools.Tools.client;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,12 +20,21 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
 import io.kamzy.breezebill.tools.DepartmentHelper;
+import okhttp3.MediaType;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class Profile extends AppCompatActivity {
-    TextInputEditText PhoneEditText,DOBEditText, classEditText;
+    TextInputEditText PhoneEditText,DOBEditText, classEditText, emailEditText;
     AutoCompleteTextView faculty_auto_complete_text_view, department_auto_complete_text_view, gender_auto_complete_text_view;
-    String Phone, DOB, classYear, faculty, department, gender;
+    String Phone, DOB, classYear, email, faculty, department, gender, idNumber;
     String [] faculty_list, department_list, gender_list;
     Context ctx;
     MaterialButton saveButton;
@@ -40,9 +54,11 @@ public class Profile extends AppCompatActivity {
         PhoneEditText = findViewById(R.id.PhoneEditText);
         DOBEditText = findViewById(R.id.DOBEditText);
         classEditText = findViewById(R.id.classEditText);
+        emailEditText = findViewById(R.id.EmailEditText);
         faculty_auto_complete_text_view = findViewById(R.id.faculty_auto_complete_text_view);
         department_auto_complete_text_view = findViewById(R.id.department_auto_complete_text_view);
         gender_auto_complete_text_view = findViewById(R.id.gender_auto_complete_text_view);
+        idNumber = getIntent().getStringExtra("id_number");
         saveButton = findViewById(R.id.saveButton);
         DepartmentHelper deptHelper = new DepartmentHelper(ctx);
 
@@ -71,9 +87,73 @@ public class Profile extends AppCompatActivity {
         });
 
         saveButton.setOnClickListener(v ->{
-            Intent intent = new Intent(ctx, Passcode.class);
-            startActivity(intent);
+            Phone = PhoneEditText.getText().toString();
+            DOB = DOBEditText.getText().toString();
+            classYear = classEditText.getText().toString();
+            email = emailEditText.getText().toString();
+            faculty = faculty_auto_complete_text_view.getText().toString();
+            department = department_auto_complete_text_view.getText().toString();
+            gender = gender_auto_complete_text_view.getText().toString();
+
+
+            if (email.isEmpty()) emailEditText.setError("Email is required");
+            if (Phone.isEmpty()) PhoneEditText.setError("Phone number is required");
+            if (DOB.isEmpty()) DOBEditText.setError("Date of birth is required");
+            if (classYear.isEmpty()) classEditText.setError("Class year is required");
+            if (faculty.isEmpty()) faculty_auto_complete_text_view.setError("Faculty is required");
+            if (department.isEmpty()) department_auto_complete_text_view.setError("Department is required");
+            if (gender.isEmpty()) gender_auto_complete_text_view.setError("Gender is required");
+            if (!email.isEmpty() && !Phone.isEmpty() && !DOB.isEmpty() && !classYear.isEmpty() && !faculty.isEmpty() && !department.isEmpty() && !gender.isEmpty()){
+                try {
+                    createProfileAPI("api/users/create_profile", email, Phone, DOB, gender, faculty, department, classYear);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         });
+
+    }
+
+    public void createProfileAPI (String endpoint, String...parameters) throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id_number", idNumber)
+                .put("email", parameters[0])
+                .put("phone_number", parameters[1])
+                .put("date_of_birth", parameters[2])
+                .put("gender", parameters[3])
+                .put("faculty", parameters[4])
+                .put("department", parameters[5])
+                .put("class_year", parameters[6]);
+
+        RequestBody requestBody =  RequestBody.create(
+                jsonObject.toString(), MediaType.get("application/json; charset=utf-8")
+        );
+
+        Request request = new Request.Builder()
+                .url(baseURL+endpoint)
+                .post(requestBody)
+                .build();
+
+        new Thread(()->{
+            try(Response response = client.newCall(request).execute()){
+                int statusCode = response.code();
+                Log.i("statusCode", String.valueOf(statusCode));
+                String responseBody = response.body().string();
+                if (response.isSuccessful()){
+                    JSONObject JSONresponseBody = new JSONObject(responseBody);
+                    String profileStatus = JSONresponseBody.getString("status");
+                    runOnUiThread(()->{
+                                Toast.makeText(ctx, profileStatus, Toast.LENGTH_LONG).show();
+                                Intent intent = new Intent(ctx, MainActivity.class);
+                                startActivity(intent);
+                    });
+                } else {
+                    Log.i("responseBody", responseBody);
+                }
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
 
     }
 }
