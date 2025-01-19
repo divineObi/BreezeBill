@@ -31,11 +31,11 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class Profile extends AppCompatActivity {
+public class UpdateProfile extends AppCompatActivity {
     TextInputEditText PhoneEditText,DOBEditText, classEditText, emailEditText;
     AutoCompleteTextView faculty_auto_complete_text_view, department_auto_complete_text_view, gender_auto_complete_text_view;
     String Phone, DOB, classYear, email, faculty, department, gender, idNumber;
-    String [] faculty_list, department_list, gender_list;
+    String [] faculty_list, gender_list;
     Context ctx;
     MaterialButton saveButton;
 
@@ -43,7 +43,7 @@ public class Profile extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_profile);
+        setContentView(R.layout.activity_update_profile);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);

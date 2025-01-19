@@ -25,7 +25,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -122,7 +121,7 @@ public class Signup extends AppCompatActivity {
                         switch (signUpStatus){
                             case  "Signup Successful":
                                 Toast.makeText(ctx, signUpStatus, Toast.LENGTH_LONG).show();
-                                Intent intent = new Intent(ctx, Profile.class);
+                                Intent intent = new Intent(ctx, UpdateProfile.class);
                                 intent.putExtra("id_number", IdNumber);
                                 startActivity(intent);
                                 break;

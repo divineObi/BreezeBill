@@ -3,12 +3,334 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/primary_100"
     tools:context=".ProfileFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:orientation="vertical"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/round_cornered_layout">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/profile_header">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary_100"/>
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginBottom="120dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:id="@+id/profile_picture"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/profile_picture"
+                        android:scaleX="1.3"
+                        android:scaleY="1.3"
+                        android:scaleType="centerCrop"
+                        android:layout_margin="40dp" />
+                </LinearLayout>
+                <LinearLayout
+
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/profile_body"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                    android:padding="16dp"
+                    android:gravity="">
+
+                    <!-- Personal Details Form -->
+
+                    <!-- ID Number -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:text="Personal Details"
+                        android:textSize="18sp"
+                        android:textColor="@color/primary_100"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/et_IdNumberInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:boxBackgroundMode="none">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_idNumber"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Staff/Reg No"
+                            android:inputType="text"
+                            android:enabled="false"
+                            android:text="Kamzy KamKam" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#E0E0E0"
+                        android:layout_marginBottom="8dp"/>
+
+                    <!-- Email -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/et_emailTextInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:boxBackgroundMode="none">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_email"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Email"
+                            android:inputType="textEmailAddress"
+                            android:enabled="false"
+                            android:text="kamzy@gmail.com" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#E0E0E0"
+                        android:layout_marginBottom="8dp"/>
+
+                    <!-- Phone -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/et_phoneInut"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:boxBackgroundMode="none">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_phone"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Phone"
+                            android:inputType="phone"
+                            android:enabled="false"
+                            android:text="+234 915 212 2575" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#E0E0E0"
+                        android:layout_marginBottom="8dp"/>
+
+                    <!-- Date of Birth -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/et_dateOfBirthInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:boxBackgroundMode="none">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_date_of_birth"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Date of Birth"
+                            android:inputType="date"
+                            android:enabled="false"
+                            android:text="Phiina Lodge, Eziobodo" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#E0E0E0"
+                        android:layout_marginBottom="8dp"/>
+
+                    <!-- Password -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/et_genderTextInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:boxBackgroundMode="outline"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        app:boxStrokeWidth="0dp"
+                        app:endIconMode="none">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/et_gender"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:paddingStart="16dp"
+                            android:paddingTop="22dp"
+                            android:paddingBottom="8dp"
+                            android:paddingEnd="16dp"
+                            android:hint="Gender"
+                            android:enabled="false"
+                            android:text="************" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#E0E0E0"
+                        android:layout_marginBottom="8dp"/>
+
+                    <!-- Gender-->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/et_facultyTextInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:boxBackgroundMode="outline"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        app:boxStrokeWidth="0dp"
+                        app:endIconMode="none">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/et_faculty"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Faculty"
+                            android:paddingStart="16dp"
+                            android:paddingTop="22dp"
+                            android:paddingBottom="8dp"
+                            android:paddingEnd="16dp"
+                            android:inputType="none"
+                            android:enabled="false"
+                            android:text="************" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#E0E0E0"
+                        android:layout_marginBottom="8dp"/>
+
+
+                    <!--Department-->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/et_departmentTextInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:boxBackgroundMode="outline"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        app:boxStrokeWidth="0dp"
+                        app:endIconMode="none">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/et_department"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Department"
+                            android:inputType="none"
+                            android:paddingStart="16dp"
+                            android:paddingTop="22dp"
+                            android:paddingBottom="8dp"
+                            android:paddingEnd="16dp"
+                            android:enabled="false"
+                            android:text="************" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#E0E0E0"
+                        android:layout_marginBottom="8dp"/>
+
+                    <!-- class year -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/et_classYearInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:boxBackgroundMode="none">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_clss_year"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Class Year"
+                            android:enabled="false"
+                            android:text="************" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#E0E0E0"
+                        android:layout_marginBottom="8dp"/>
+
+
+                    <!-- Buttons -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:paddingTop="16dp">
+
+                        <Button
+                            android:id="@+id/btn_update"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Update"
+                            android:backgroundTint="@color/primary_100"
+                            android:textColor="@color/white"
+                            android:layout_marginEnd="8dp" />
+
+                        <Button
+                            android:id="@+id/btn_save"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Save"
+                            android:backgroundTint="@color/placeholder_text"
+                            android:textColor="@color/white"
+                            android:enabled="false" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/logout_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Logout from your account"
+                        android:textColor="@color/primary_100"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:layout_marginTop="24dp"
+                        android:layout_gravity="center_horizontal" />
+
+                </LinearLayout>
+            </LinearLayout>
+
+        </ScrollView>
+
+
+
+    </LinearLayout>
 
 </FrameLayout>

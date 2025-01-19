@@ -41,6 +41,7 @@ public class Dashboard extends AppCompatActivity {
     Context ctx;
     BottomNavigationView bottomNavigationView;
     private FragmentManager fragmentManager;
+    String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +57,7 @@ public class Dashboard extends AppCompatActivity {
         ctx = this;
         bottomNavigationView = findViewById(R.id.bottomNavigation);
         fragmentManager = getSupportFragmentManager();
+        token = getIntent().getStringExtra("token");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
@@ -84,6 +86,11 @@ public class Dashboard extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                // Reset all icons to outline versions
+                bottomNavigationView.getMenu().findItem(R.id.home).setIcon(R.drawable.home_outline);
+                bottomNavigationView.getMenu().findItem(R.id.bills).setIcon(R.drawable.create_bill);
+                bottomNavigationView.getMenu().findItem(R.id.group).setIcon(R.drawable.create_group);
+                bottomNavigationView.getMenu().findItem(R.id.profile).setIcon(R.drawable.profile);
                 handleNavigationItemSelected(item);
                 return true;
             }
@@ -106,12 +113,14 @@ public class Dashboard extends AppCompatActivity {
     private Fragment getFragmentForMenuItem(@NonNull MenuItem item) {
         int itemId = item.getItemId();
         if (itemId == R.id.home) {
+            item.setIcon(R.drawable.home_filled);
             return new HomeFragment();
         } else if (itemId == R.id.bills) {
             return new BillFragment();
         } else if (itemId == R.id.group) {
             return new GroupFragment();
         } else if (itemId == R.id.profile) {
+            item.setIcon(R.drawable.profile_filled);
             return new ProfileFragment();
         } else {
             return null;
