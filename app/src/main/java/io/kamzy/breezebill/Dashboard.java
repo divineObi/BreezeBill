@@ -27,16 +27,21 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
 
+import io.kamzy.breezebill.SharedViewModels.GroupSharedViewModel;
 import io.kamzy.breezebill.SharedViewModels.TokenSharedViewModel;
 import io.kamzy.breezebill.SharedViewModels.UserSharedviewModel;
 import io.kamzy.breezebill.SharedViewModels.WalletSharedviewModel;
+import io.kamzy.breezebill.models.Groupss;
 import io.kamzy.breezebill.models.Users;
 import io.kamzy.breezebill.models.Wallet;
+import io.kamzy.breezebill.tools.DataManager;
 import io.kamzy.breezebill.tools.GsonHelper;
 import okhttp3.FormBody;
 import okhttp3.Request;
@@ -48,10 +53,11 @@ public class Dashboard extends AppCompatActivity {
     BottomNavigationView bottomNavigationView;
     private FragmentManager fragmentManager;
     String token, IdNumber;
-    GsonHelper gsonHelper;
+    static GsonHelper gsonHelper;
     UserSharedviewModel userSharedviewModel;
     WalletSharedviewModel walletSharedviewModel;
     TokenSharedViewModel tokenSharedViewModel;
+    GroupSharedViewModel groupSharedViewModel;
     private Fragment homeFragment = new HomeFragment();
     private Fragment billFragment = new BillFragment();
     private Fragment groupFragment =  new GroupFragment();
@@ -79,12 +85,16 @@ public class Dashboard extends AppCompatActivity {
 //        initialize Shared view Models
          userSharedviewModel = new ViewModelProvider(this).get(UserSharedviewModel.class);
          walletSharedviewModel = new  ViewModelProvider(this).get(WalletSharedviewModel.class);
+         groupSharedViewModel = new ViewModelProvider(this).get(GroupSharedViewModel.class);
          tokenSharedViewModel = new ViewModelProvider(this).get(TokenSharedViewModel.class);
          tokenSharedViewModel.setToken(token);
 
 //         get & save Users Data
         getUserAPI("api/users/get-user", IdNumber);
         getWalletAPI("api/wallet/get_wallet", IdNumber, token);
+
+//        get All Groups & save
+        getAllGroupsAPI("api/groups/all", token);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
@@ -202,6 +212,7 @@ public class Dashboard extends AppCompatActivity {
                        Users loggedInUser = gsonHelper.parseJSONtoUsers(jsonRespone.toString());
                        runOnUiThread(()->{
                            userSharedviewModel.setUserData(loggedInUser);
+                           DataManager.getInstance().setUsers(loggedInUser);
                         });
                     }
                 }else {
@@ -231,6 +242,7 @@ public class Dashboard extends AppCompatActivity {
                 String responseBody =response.body() != null ? response.body().string() : "null";
                 if (response.isSuccessful()){
                     if (responseBody.equals("null")){
+                        Log.i("Wallet Status", "Not Found");
                     }else {
                         JSONObject jsonRespone = new JSONObject(responseBody);
                         Wallet userWallet = gsonHelper.parseJSONtoWallet(jsonRespone.toString());
@@ -239,7 +251,39 @@ public class Dashboard extends AppCompatActivity {
                         });
                     }
                 }else {
+                    Log.i("Wallet API Status", "Error Connecting to Wallet Endpoint");
+                }
 
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+    }
+
+    public static void getAllGroupsAPI(String endpoint, String token){
+
+        Request request = new Request.Builder()
+                .url(baseURL + endpoint)
+                .get()
+                .addHeader("Authorization", "Bearer "+token)
+                .build();
+
+        new Thread(()->{
+            try(Response response = client.newCall(request).execute()){
+                int statusCode=response.code();
+                Log.i("status code", String.valueOf(statusCode));
+                String responseBody = response.body().string();
+                if (response.isSuccessful()){
+                    if (responseBody.equals("[]")){
+                        Log.i("Group Status", "No group found");
+                    }else {
+                        Log.i("Groups", responseBody);
+                        JSONArray jsonRespone = new JSONArray(responseBody);
+                        List<Groupss> allGroups = gsonHelper.parseJSONArrayToListGroups(String.valueOf(jsonRespone));
+                        DataManager.getInstance().setAllGroups(allGroups);
+                    }
+                }else {
+                    Log.i("Group API status", "Error: Couldn't reach group Endpoint");
                 }
 
             } catch (IOException | JSONException e) {

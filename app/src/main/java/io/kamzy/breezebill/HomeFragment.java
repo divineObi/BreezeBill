@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -46,6 +47,7 @@ public class HomeFragment extends Fragment {
     UserSharedviewModel userSharedviewModel;
     WalletSharedviewModel walletSharedviewModel;
     TokenSharedViewModel tokenSharedViewModel;
+    ImageButton addFunds, createBill, createGroup, transfer;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -106,6 +108,10 @@ public class HomeFragment extends Fragment {
         balanceAmount = view.findViewById(R.id.balanceAmount);
         notificationButton = view.findViewById(R.id.notificationIcon);
         tabLayout = view.findViewById(R.id.tabLayout);
+        addFunds = view.findViewById(R.id.fundWalletButton);
+        createBill = view.findViewById(R.id.createBillButton);
+        createGroup = view.findViewById(R.id.createGroupButton);
+        transfer = view.findViewById(R.id.transferButton);
         recyclerView = view.findViewById(R.id.recyclerView);
 
         userSharedviewModel = new ViewModelProvider(requireActivity()).get(UserSharedviewModel.class);
@@ -171,9 +177,14 @@ public class HomeFragment extends Fragment {
 
         notificationButton.setOnClickListener(v ->{
             Intent intent = new Intent(getContext(), Notification.class);
-            intent.putExtra("token", token);
-            intent.putExtra("idNumber", users.getId_number());
             startActivity(intent);
+        });
+
+        createGroup.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), CreateGroup.class);
+            intent.putExtra("token", token);
+            startActivity(intent);
+
         });
 
         });

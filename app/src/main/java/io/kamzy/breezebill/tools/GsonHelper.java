@@ -4,7 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.util.List;
 
+import io.kamzy.breezebill.models.Groupss;
 import io.kamzy.breezebill.models.Profile;
 import io.kamzy.breezebill.models.Users;
 import io.kamzy.breezebill.models.Wallet;
@@ -30,4 +32,9 @@ public class GsonHelper {
     }
 
 
+    public List<Groupss> parseJSONArrayToListGroups(String s) {
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<Groupss>>() {}.getType();
+        return gson.fromJson(s, type);
+    }
 }
