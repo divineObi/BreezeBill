@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -31,11 +33,20 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
+import io.kamzy.breezebill.SharedViewModels.UserSharedviewModel;
 import io.kamzy.breezebill.models.Profile;
+import io.kamzy.breezebill.tools.CustomArrayAdapter;
 import io.kamzy.breezebill.tools.DepartmentHelper;
+import io.kamzy.breezebill.tools.GsonHelper;
 import okhttp3.FormBody;
+import okhttp3.MediaType;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
@@ -50,6 +61,8 @@ public class ProfileFragment extends Fragment {
     private Button btnUpdate, btnSave;
     DepartmentHelper deptHelper;
     String [] faculty_list, gender_list;
+    GsonHelper gsonHelper;
+    UserSharedviewModel userSharedviewModel;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -102,6 +115,9 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        userSharedviewModel = new ViewModelProvider(requireActivity()).get(UserSharedviewModel.class);
+        userSharedviewModel.getUserData().observe(getViewLifecycleOwner(), users -> {
+
         etIDNumber = view.findViewById(R.id.et_idNumber);
         etEmail = view.findViewById(R.id.et_email);
         etPhone = view.findViewById(R.id.et_phone);
@@ -123,18 +139,19 @@ public class ProfileFragment extends Fragment {
         faculty_list = getResources().getStringArray(R.array.faculty_list);
         gender_list = getResources().getStringArray(R.array.gender_list);
         deptHelper = new DepartmentHelper(getContext());
+        gsonHelper = new GsonHelper();
 
-        getProfileApI("api/users/get-profile", "20191152552");
+        getProfileApI("api/users/get-profile", users.getId_number());
 
         // Create an ArrayAdapter for the dropdown options & Set the adapter to the AutoCompleteTextView
-        ArrayAdapter<String> facultyAdapter = new ArrayAdapter<>(
+        CustomArrayAdapter facultyAdapter = new CustomArrayAdapter(
                 requireContext(),
                 android.R.layout.simple_dropdown_item_1line,
                 faculty_list
         );
         etFaculty.setAdapter(facultyAdapter);
 
-        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(
+        CustomArrayAdapter genderAdapter = new CustomArrayAdapter(
                 requireContext(),
                 android.R.layout.simple_dropdown_item_1line,
                 gender_list
@@ -151,15 +168,33 @@ public class ProfileFragment extends Fragment {
         btnUpdate.setOnClickListener(v -> {
             toggleFormEditable(true);
             setDropdownEditable(true);
+            deptHelper.populateDepartmentDropdown(etFaculty.getText().toString(),etDepartment);
         });
 
         // Save Button Logic
         btnSave.setOnClickListener(v -> {
+            String idNumber = etIDNumber.getText().toString();
+            String email = etEmail.getText().toString();
+            String phone = etPhone.getText().toString();
+            String dateOfBirth = etDateOfBirth.getText().toString();
+            String gender = etGender.getText().toString();
+            String faculty = etFaculty.getText().toString();
+            String department = etDepartment.getText().toString();
+            String classYear = etClassYear.getText().toString();
+
             // Save changes (implement your save logic here)
+            try {
+                saveProfileApI("api/users/update-profile", idNumber, email, phone, dateOfBirth, gender, faculty, department, classYear );
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+
             toggleFormEditable(false);
             setDropdownEditable(false);
             clearFocusFromAllFields();
             resetTextInputStates();
+        });
+
         });
 
     }
@@ -286,12 +321,18 @@ public class ProfileFragment extends Fragment {
 
                     }else {
                         JSONObject jsonRespone = new JSONObject(responseBody);
-                        Profile userProfile = parseJSONtoProfile(jsonRespone.toString());
+                        Profile userProfile = gsonHelper.parseJSONtoProfile(jsonRespone.toString());
                         getActivity().runOnUiThread(()->{
                             etIDNumber.setText(userProfile.getId_number());
                             etEmail.setText(userProfile.getEmail());
                             etPhone.setText(userProfile.getPhone_number());
-                            etDateOfBirth.setText(String.valueOf(userProfile.getDate_of_birth()));
+
+                            // Desired format
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                            // Format the date
+                            String formattedDate = dateFormat.format(userProfile.getDate_of_birth());
+                            etDateOfBirth.setText(formattedDate);
+
                             etGender.setText(userProfile.getGender().toString());
                             etFaculty.setText(userProfile.getFaculty());
                             etDepartment.setText(userProfile.getDepartment());
@@ -308,9 +349,51 @@ public class ProfileFragment extends Fragment {
         }).start();
     }
 
-    private Profile parseJSONtoProfile(String jsonObjectString) {
-        Gson gson = new Gson();
-        Type type = new TypeToken<Profile>() {}.getType();
-        return gson.fromJson(jsonObjectString, type);
+    public void saveProfileApI(String endpoint, String...parameters) throws JSONException {
+        JSONObject jsonObject = new JSONObject()
+                .put("id_number", parameters[0])
+                .put("email", parameters[1])
+                .put("phone_number", parameters[2])
+                .put("date_of_birth", parameters[3])
+                .put("gender", parameters[4])
+                .put("faculty", parameters[5])
+                .put("department", parameters[6])
+                .put("class_year", parameters[7]);
+
+        RequestBody requestBody = RequestBody.create( jsonObject.toString(), MediaType.parse("application/json"));
+
+        Request request = new Request.Builder()
+                .url(baseURL + endpoint)
+                .put(requestBody)
+                .build();
+
+        new Thread(()->{
+            try(Response response = client.newCall(request).execute()){
+                int statusCode=response.code();
+                Log.i("status code", String.valueOf(statusCode));
+                String responseBody =response.body() != null ? response.body().string() : "null";
+                if (response.isSuccessful()){
+                    if (responseBody.equals("null")){
+                        Log.i("Update Profile Status", "Failed");
+                    }else {
+                        Log.i("Update Profile Status", "Success");
+                        JSONObject jsonRespone = new JSONObject(responseBody);
+                       String status = jsonRespone.getString("status");
+                        getActivity().runOnUiThread(()->{
+                            Toast.makeText(requireContext(), status, Toast.LENGTH_LONG).show();
+                        });
+                    }
+                }else {
+                    Log.i("Update Profile API error", "Failed to reach Profile Endpoint");
+                }
+
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
     }
+
+
+
+
 }

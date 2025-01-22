@@ -18,10 +18,10 @@
 
         <!-- Title -->
         <TextView
-            android:id="@+id/title"
+            android:id="@+id/passcodeTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Enter your passcode"
+            android:text="Setup your passcode"
             android:textSize="24sp"
             android:textStyle="bold"
             android:layout_marginBottom="24dp"

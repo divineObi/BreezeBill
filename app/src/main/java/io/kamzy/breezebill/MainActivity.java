@@ -98,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(()->{
                         Intent intent = new Intent(ctx, Dashboard.class);
                         intent.putExtra("token", token);
+                        intent.putExtra("idNumber", idNumber);
                         startActivity(intent);
                     });
                 } else if (statusCode == 401){

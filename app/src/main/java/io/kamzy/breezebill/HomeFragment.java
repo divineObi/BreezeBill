@@ -1,13 +1,12 @@
 package io.kamzy.breezebill;
 
-import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,6 +23,9 @@ import com.google.android.material.tabs.TabLayout;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.kamzy.breezebill.SharedViewModels.TokenSharedViewModel;
+import io.kamzy.breezebill.SharedViewModels.UserSharedviewModel;
+import io.kamzy.breezebill.SharedViewModels.WalletSharedviewModel;
 import io.kamzy.breezebill.adapters.BillAdapter;
 import io.kamzy.breezebill.models.Bills;
 
@@ -38,9 +40,12 @@ public class HomeFragment extends Fragment {
     BillAdapter billAdapter;
     List<Bills> bills;
     ImageView hideBalance, notificationButton;
-    TextView balanceAmount;
+    TextView balanceAmount, greeting;
     String CURRENT_BALANCE;
     boolean isBalanceHidden = false; // Track balance state
+    UserSharedviewModel userSharedviewModel;
+    WalletSharedviewModel walletSharedviewModel;
+    TokenSharedViewModel tokenSharedViewModel;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -93,14 +98,28 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        tokenSharedViewModel = new ViewModelProvider(requireActivity()).get(TokenSharedViewModel.class);
+        tokenSharedViewModel.getToken().observe(getViewLifecycleOwner(), token ->{
+
+        greeting = view.findViewById(R.id.userGreeting);
         hideBalance = view.findViewById(R.id.hide_balance);
         balanceAmount = view.findViewById(R.id.balanceAmount);
-        CURRENT_BALANCE = balanceAmount.getText().toString();
         notificationButton = view.findViewById(R.id.notificationIcon);
         tabLayout = view.findViewById(R.id.tabLayout);
         recyclerView = view.findViewById(R.id.recyclerView);
 
-                // Set up RecyclerView
+        userSharedviewModel = new ViewModelProvider(requireActivity()).get(UserSharedviewModel.class);
+        userSharedviewModel.getUserData().observe(getViewLifecycleOwner(), users -> {
+            greeting.setText("Hi "+users.getFirst_name());
+
+
+        walletSharedviewModel = new ViewModelProvider(requireActivity()).get(WalletSharedviewModel.class);
+        walletSharedviewModel.getWalletData().observe(getViewLifecycleOwner(), wallet -> {
+            balanceAmount.setText(String.valueOf(wallet.getBalance()));
+            CURRENT_BALANCE = balanceAmount.getText().toString();
+        });
+
+        // Set up RecyclerView
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -152,9 +171,14 @@ public class HomeFragment extends Fragment {
 
         notificationButton.setOnClickListener(v ->{
             Intent intent = new Intent(getContext(), Notification.class);
+            intent.putExtra("token", token);
+            intent.putExtra("idNumber", users.getId_number());
             startActivity(intent);
         });
 
+        });
+
+        });
     }
 
     // Load bills based on selected tab

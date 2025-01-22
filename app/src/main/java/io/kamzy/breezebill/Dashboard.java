@@ -1,15 +1,16 @@
 package io.kamzy.breezebill;
 
+import static io.kamzy.breezebill.tools.Tools.baseURL;
+import static io.kamzy.breezebill.tools.Tools.client;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -21,27 +22,41 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
-import com.google.android.material.tabs.TabLayout;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import io.kamzy.breezebill.adapters.BillAdapter;
-import io.kamzy.breezebill.models.Bills;
+import java.io.IOException;
+
+import io.kamzy.breezebill.SharedViewModels.TokenSharedViewModel;
+import io.kamzy.breezebill.SharedViewModels.UserSharedviewModel;
+import io.kamzy.breezebill.SharedViewModels.WalletSharedviewModel;
+import io.kamzy.breezebill.models.Users;
+import io.kamzy.breezebill.models.Wallet;
+import io.kamzy.breezebill.tools.GsonHelper;
+import okhttp3.FormBody;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class Dashboard extends AppCompatActivity {
 
     Context ctx;
     BottomNavigationView bottomNavigationView;
     private FragmentManager fragmentManager;
-    String token;
+    String token, IdNumber;
+    GsonHelper gsonHelper;
+    UserSharedviewModel userSharedviewModel;
+    WalletSharedviewModel walletSharedviewModel;
+    TokenSharedViewModel tokenSharedViewModel;
+    private Fragment homeFragment = new HomeFragment();
+    private Fragment billFragment = new BillFragment();
+    private Fragment groupFragment =  new GroupFragment();
+    private Fragment profileFragment = new ProfileFragment();
+    Fragment activeFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +73,18 @@ public class Dashboard extends AppCompatActivity {
         bottomNavigationView = findViewById(R.id.bottomNavigation);
         fragmentManager = getSupportFragmentManager();
         token = getIntent().getStringExtra("token");
+        IdNumber = getIntent().getStringExtra("idNumber");
+        gsonHelper = new GsonHelper();
+
+//        initialize Shared view Models
+         userSharedviewModel = new ViewModelProvider(this).get(UserSharedviewModel.class);
+         walletSharedviewModel = new  ViewModelProvider(this).get(WalletSharedviewModel.class);
+         tokenSharedViewModel = new ViewModelProvider(this).get(TokenSharedViewModel.class);
+         tokenSharedViewModel.setToken(token);
+
+//         get & save Users Data
+        getUserAPI("api/users/get-user", IdNumber);
+        getWalletAPI("api/wallet/get_wallet", IdNumber, token);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
@@ -76,11 +103,31 @@ public class Dashboard extends AppCompatActivity {
             }
         }
 
+
         // Set default fragment
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, new HomeFragment())
+                .add(R.id.fragment_container, homeFragment, "Home")
+                .commit();
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, billFragment, "Bill").hide(billFragment)
+                .commit();
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, groupFragment, "Group").hide(groupFragment)
+                .commit();
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, profileFragment, "Profile").hide(profileFragment)
                 .commit();
 
+        activeFragment = homeFragment;
+
+        walletSharedviewModel.getWalletData().observe(this, wallet -> {
+            if (wallet.getCode()==null){
+                Intent intent = new Intent(ctx, Passcode.class);
+                intent.putExtra("token", token);
+                intent.putExtra("idNumber", IdNumber);
+                startActivity(intent);
+            }
+        });
 
         // Bottom Navigation
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
@@ -114,14 +161,14 @@ public class Dashboard extends AppCompatActivity {
         int itemId = item.getItemId();
         if (itemId == R.id.home) {
             item.setIcon(R.drawable.home_filled);
-            return new HomeFragment();
+            return homeFragment;
         } else if (itemId == R.id.bills) {
-            return new BillFragment();
+            return billFragment;
         } else if (itemId == R.id.group) {
-            return new GroupFragment();
+            return groupFragment;
         } else if (itemId == R.id.profile) {
             item.setIcon(R.drawable.profile_filled);
-            return new ProfileFragment();
+            return profileFragment;
         } else {
             return null;
         }
@@ -129,8 +176,76 @@ public class Dashboard extends AppCompatActivity {
 
     private void showFragment(Fragment fragment) {
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.replace(R.id.fragment_container, fragment);
+        transaction.hide(activeFragment).show(fragment);
         transaction.commit();
+        activeFragment = fragment;
+    }
+
+    private void getUserAPI (String endpoint, String idNumber){
+        FormBody.Builder formbody = new FormBody.Builder()
+                .add("id_number", idNumber);
+
+        Request request = new Request.Builder()
+                .url(baseURL + endpoint)
+                .post(formbody.build())
+                .build();
+
+        new Thread(()->{
+            try(Response response = client.newCall(request).execute()){
+                int statusCode=response.code();
+                Log.i("status code", String.valueOf(statusCode));
+                String responseBody =response.body() != null ? response.body().string() : "null";
+                if (response.isSuccessful()){
+                    if (responseBody.equals("null")){
+                    }else {
+                        JSONObject jsonRespone = new JSONObject(responseBody);
+                       Users loggedInUser = gsonHelper.parseJSONtoUsers(jsonRespone.toString());
+                       runOnUiThread(()->{
+                           userSharedviewModel.setUserData(loggedInUser);
+                        });
+                    }
+                }else {
+
+                }
+
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+    }
+
+    private void getWalletAPI (String endpoint, String idNumber, String token){
+        FormBody.Builder formbody = new FormBody.Builder()
+                .add("id_number", idNumber);
+
+        Request request = new Request.Builder()
+                .url(baseURL + endpoint)
+                .post(formbody.build())
+                .addHeader("Authorization", "Bearer "+token)
+                .build();
+
+        new Thread(()->{
+            try(Response response = client.newCall(request).execute()){
+                int statusCode=response.code();
+                Log.i("status code", String.valueOf(statusCode));
+                String responseBody =response.body() != null ? response.body().string() : "null";
+                if (response.isSuccessful()){
+                    if (responseBody.equals("null")){
+                    }else {
+                        JSONObject jsonRespone = new JSONObject(responseBody);
+                        Wallet userWallet = gsonHelper.parseJSONtoWallet(jsonRespone.toString());
+                        runOnUiThread(()->{
+                            walletSharedviewModel.setWalletData(userWallet);
+                        });
+                    }
+                }else {
+
+                }
+
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
     }
 
 }

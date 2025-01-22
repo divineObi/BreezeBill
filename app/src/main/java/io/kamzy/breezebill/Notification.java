@@ -50,11 +50,7 @@ public class Notification extends AppCompatActivity {
         }
 
         boolean hasNotification = false;
-
-        close.setOnClickListener(v ->{
-            Intent intent = new Intent(ctx, Dashboard.class);
-            startActivity(intent);
-        });
+        close.setOnClickListener(v -> finish());
 
         if (hasNotification){
             no_notification_image.setVisibility(View.GONE);

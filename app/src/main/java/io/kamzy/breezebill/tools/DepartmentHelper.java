@@ -30,7 +30,7 @@ public class DepartmentHelper {
         String[] departmentList = getDepartmentList(selectedFaculty);
 
         if (departmentList != null) {
-            ArrayAdapter<String> departmentAdapter = new ArrayAdapter<>(
+            CustomArrayAdapter departmentAdapter = new CustomArrayAdapter(
                     context,
                     android.R.layout.simple_dropdown_item_1line,
                     departmentList
