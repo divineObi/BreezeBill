@@ -1,27 +1,45 @@
 package io.kamzy.breezebill;
 
+import static io.kamzy.breezebill.tools.Tools.baseURL;
+import static io.kamzy.breezebill.tools.Tools.client;
+
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.google.android.material.tabs.TabLayout;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
+import io.kamzy.breezebill.SharedViewModels.UsersGroupsSharedViewModel;
 import io.kamzy.breezebill.adapters.GroupAdapter;
 import io.kamzy.breezebill.models.Groupss;
 import io.kamzy.breezebill.tools.DataManager;
+import okhttp3.FormBody;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -33,6 +51,9 @@ public class GroupFragment extends Fragment {
     TabLayout groupTabs;
     RecyclerView groupRecyclerView;
     List<Groupss> groupList;
+    UsersGroupsSharedViewModel usersGroupsSharedViewModel;
+    GroupAdapter groupAdapter;
+    private String currentTab = "MY GROUPS";
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -77,38 +98,33 @@ public class GroupFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_group, container, false);
-    }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_group, container, false);
 
         noGroupImage = view.findViewById(R.id.no_group_screen);
         groupTabs = view.findViewById(R.id.groupTabLayout);
+        groupTabs.addTab(groupTabs.newTab().setText("MY GROUPS"));
+        groupTabs.addTab(groupTabs.newTab().setText("EXPLORE GROUPS"));
         groupRecyclerView = view.findViewById(R.id.groupRecyclerView);
-
-        if (groupList != null){
-            noGroupImage.setVisibility(View.GONE);
-            groupRecyclerView.setVisibility(View.VISIBLE);
-        } else {
-            noGroupImage.setVisibility(View.VISIBLE);
-            groupRecyclerView.setVisibility(View.GONE);
-        }
+        groupList = DataManager.getInstance().getUsersGroups();
 
         // Set up RecyclerView
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
         groupRecyclerView.setLayoutManager(layoutManager);
         groupRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        groupAdapter = new GroupAdapter(requireContext(), groupList, "MY_GROUPS");
+        groupRecyclerView.setAdapter(groupAdapter);
+        DividerItemDecoration divider = new DividerItemDecoration(groupRecyclerView.getContext(), LinearLayoutManager.VERTICAL);
+        groupRecyclerView.addItemDecoration(divider);
 
-        groupTabs.addTab(groupTabs.newTab().setText("MY GROUPS"));
-        groupTabs.addTab(groupTabs.newTab().setText("EXPLORE GROUPS"));
+        toggleEmptyState(groupList);
 
         groupTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                loadGroups(tab.getText().toString());
+                currentTab = tab.getText().toString();
+                loadGroups(currentTab);
             }
 
             @Override
@@ -122,46 +138,95 @@ public class GroupFragment extends Fragment {
             }
         });
 
-//        Load initial Group List
-        loadGroups("MY GROUPS");
+        return view;
+    }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        usersGroupsSharedViewModel = new ViewModelProvider(requireActivity()).get(UsersGroupsSharedViewModel.class);
+        usersGroupsSharedViewModel.getUsersGroupsList().observe(requireActivity(), groupss -> {
+        noGroupImage = view.findViewById(R.id.no_group_screen);
+        groupTabs = view.findViewById(R.id.groupTabLayout);
+
+        groupRecyclerView = view.findViewById(R.id.groupRecyclerView);
+        groupList = groupss;
+
+        // Set up RecyclerView
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
+        groupRecyclerView.setLayoutManager(layoutManager);
+        groupRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        groupAdapter = new GroupAdapter(requireContext(), groupList, "MY_GROUPS");
+        groupRecyclerView.setAdapter(groupAdapter);
+        DividerItemDecoration divider = new DividerItemDecoration(groupRecyclerView.getContext(), LinearLayoutManager.VERTICAL);
+        groupRecyclerView.addItemDecoration(divider);
+
+            if (groupList!=null && !groupList.isEmpty()){
+                groupAdapter.updateData(groupList, "MY_GROUPS");
+            }else {
+                groupAdapter.updateData(new ArrayList<>(), "MY_GROUPS");
+            }
+
+            toggleEmptyState(groupList);
+
+
+
+        groupTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                currentTab = tab.getText().toString();
+                loadGroups(currentTab);
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
+        });
 
     }
 
-    private void loadGroups(String selectedTab) {
-        if (selectedTab.equals("MY GROUPS")){
-//            groupList = DataManager.getInstance().getAllGroups();
-            if (groupList != null){
-                noGroupImage.setVisibility(View.GONE);
-                groupRecyclerView.setVisibility(View.VISIBLE);
-                GroupAdapter groupAdapter = new GroupAdapter(requireContext(), groupList,  "MY_GROUPS", groupss -> {
 
-
-                });
-                groupRecyclerView.setAdapter(groupAdapter);
-                groupAdapter.updateData(groupList);
-                DividerItemDecoration divider = new DividerItemDecoration(groupRecyclerView.getContext(), LinearLayoutManager.VERTICAL);
-                groupRecyclerView.addItemDecoration(divider);
-            } else {
-                noGroupImage.setVisibility(View.VISIBLE);
-                groupRecyclerView.setVisibility(View.GONE);
-            }
-        } else if (selectedTab.equals("EXPLORE GROUPS")){
-            groupList = DataManager.getInstance().getAllGroups();
-            if (groupList != null) {
-                noGroupImage.setVisibility(View.GONE);
-                groupRecyclerView.setVisibility(View.VISIBLE);
-                GroupAdapter groupAdapter = new GroupAdapter(requireContext(), groupList, "EXPLORE_GROUPS", groupss -> {
-
-                });
-                groupRecyclerView.setAdapter(groupAdapter);
-                groupAdapter.updateData(groupList);
-                DividerItemDecoration divider = new DividerItemDecoration(groupRecyclerView.getContext(), LinearLayoutManager.VERTICAL);
-                groupRecyclerView.addItemDecoration(divider);
-            } else {
-                noGroupImage.setVisibility(View.VISIBLE);
-                groupRecyclerView.setVisibility(View.GONE);
-            }
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            loadGroups(currentTab);
         }
     }
+
+    public void loadGroups(String selectedTab) {
+        if (selectedTab.equals("MY GROUPS")) {
+            groupList = DataManager.getInstance().getUsersGroups();
+            groupAdapter.updateData(groupList, "MY_GROUPS");
+            toggleEmptyState(groupList);
+
+        } else if (selectedTab.equals("EXPLORE GROUPS")) {
+            groupList = DataManager.getInstance().getAllGroups();
+            groupAdapter.updateData(groupList, "EXPLORE_GROUPS");
+            toggleEmptyState(groupList);
+        }
+    }
+
+    public void toggleEmptyState(List<Groupss> groupList){
+        if (groupList!=null){
+            noGroupImage.setVisibility(View.GONE);
+            groupRecyclerView.setVisibility(View.VISIBLE);
+
+        }else {
+            noGroupImage.setVisibility(View.VISIBLE);
+            groupRecyclerView.setVisibility(View.GONE);
+        }
+    }
+
+
+
+
 }

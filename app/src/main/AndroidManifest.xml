@@ -17,8 +17,13 @@
         android:theme="@style/Theme.Breezebill"
         tools:targetApi="31">
         <activity
+            android:name=".CreateBill"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"/>
+        <activity
             android:name=".CreateGroup"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".Groups"
             android:exported="false" />

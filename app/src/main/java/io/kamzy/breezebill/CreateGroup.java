@@ -4,7 +4,6 @@ import static io.kamzy.breezebill.tools.Tools.baseURL;
 import static io.kamzy.breezebill.tools.Tools.client;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -20,23 +19,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
 
-import io.kamzy.breezebill.SharedViewModels.GroupSharedViewModel;
-import io.kamzy.breezebill.SharedViewModels.TokenSharedViewModel;
-import io.kamzy.breezebill.SharedViewModels.UserSharedviewModel;
 import io.kamzy.breezebill.enums.GroupType;
 import io.kamzy.breezebill.models.Groupss;
 import io.kamzy.breezebill.tools.DataManager;
-import okhttp3.FormBody;
+import io.kamzy.breezebill.tools.GsonHelper;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -51,6 +47,8 @@ public class CreateGroup extends AppCompatActivity {
     Button createGroupButton;
     ImageView closeButton;
     String groupName, description, groupType, parentGroup, token;
+    Dashboard dashboard;
+    GsonHelper gsonHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +72,8 @@ public class CreateGroup extends AppCompatActivity {
         groupParentEditText = findViewById(R.id.groupParentEditText);
         createGroupButton = findViewById(R.id.createGroupButton);
         closeButton = findViewById(R.id.create_group_back_button);
+        dashboard = new Dashboard();
+        gsonHelper = new GsonHelper();
         String[] groupTypeList = {String.valueOf(GroupType.Super), String.valueOf(GroupType.Sub)};
 
 
@@ -177,7 +177,17 @@ public class CreateGroup extends AppCompatActivity {
                                     break;
                                 case "Group created successfully":
                                     Toast.makeText(ctx, GroupStatus, Toast.LENGTH_LONG).show();
-                                    Dashboard.getAllGroupsAPI("api/groups/all", token);
+                                    dashboard.getAllGroupsAPI("api/groups/all", token, new ApiCallback<List<Groupss>>() {
+                                        @Override
+                                        public void onSuccess(List<Groupss> groups) {
+                                        }
+
+                                        @Override
+                                        public void onFailure(Throwable t) {
+                                            Toast.makeText(ctx, "Failed to load groups", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                    getUsersGroupsAPI("api/groups/"+DataManager.getInstance().getUsers().getUser_id()+"/user-groups", token);
                                     finish();
                                     break;
                                 case "Error creating Group":
@@ -194,5 +204,40 @@ public class CreateGroup extends AppCompatActivity {
             }).start();
 
 
+    }
+
+    public void getUsersGroupsAPI(String endpoint, String token){
+
+        Request request = new Request.Builder()
+                .url(baseURL + endpoint)
+                .get()
+                .addHeader("Authorization", "Bearer "+token)
+                .build();
+
+        new Thread(()->{
+            try(Response response = client.newCall(request).execute()){
+                int statusCode=response.code();
+                Log.i("status code", String.valueOf(statusCode));
+                String responseBody = response.body().string();
+                if (response.isSuccessful()){
+                    if (responseBody.equals("[]")){
+                        Log.i("Users Group Status", "No group found");
+                        DataManager.getInstance().setUsersGroups(null);
+                    }else {
+                        Log.i("Groups", responseBody);
+                        JSONArray jsonRespone = new JSONArray(responseBody);
+                        List<Groupss> usersGroups = gsonHelper.parseJSONArrayToListGroups(String.valueOf(jsonRespone));
+                        runOnUiThread(()->{
+                            DataManager.getInstance().setUsersGroups(usersGroups);
+                        });
+                    }
+                }else {
+                    Log.i("Group API status", "Error: Couldn't reach group Endpoint");
+                }
+
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
     }
 }

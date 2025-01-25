@@ -1,5 +1,7 @@
 package io.kamzy.breezebill.adapters;
 
+import static io.kamzy.breezebill.CreateBill.formatAmount;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.kamzy.breezebill.Dashboard;
@@ -20,10 +23,12 @@ import io.kamzy.breezebill.models.Bills;
 public class BillAdapter extends  RecyclerView.Adapter<BillAdapter.BillViewHolder> {
     private List<Bills> bills;
     Context context;
+    private String listType;
 
-    public BillAdapter(List<Bills> bills, Context context) {
-        this.bills = bills;
+    public BillAdapter(Context context, List<Bills> bills, String listType) {
         this.context = context;
+        this.bills = bills;
+        this.listType = listType;
     }
 
     @NonNull
@@ -38,10 +43,16 @@ public class BillAdapter extends  RecyclerView.Adapter<BillAdapter.BillViewHolde
 
         Bills bill = bills.get(position);
         holder.billNameTextView.setText(bill.getBill_name());
-        holder.billAmountTextView.setText((String.valueOf(bill.getAmount())));
-        holder.payButton.setOnClickListener(v -> {
-            Toast.makeText(context, "Pay Button Clicked", Toast.LENGTH_SHORT).show();
-        });
+        holder.billAmountTextView.setText(formatAmount(bill.getUnit_amount()));
+
+        if (listType.equals("ACTIVE")){
+            holder.payButton.setOnClickListener(v -> {
+                Toast.makeText(context, "Pay Button Clicked", Toast.LENGTH_SHORT).show();
+            });
+        }else {
+            holder.payButton.setVisibility(View.GONE);
+        }
+
 
     }
 
@@ -50,8 +61,13 @@ public class BillAdapter extends  RecyclerView.Adapter<BillAdapter.BillViewHolde
         return bills.size();
     }
 
-    public void updateData(List<Bills> newBills) {
-        bills = newBills;
+    public void updateData(List<Bills> newBills, String listType) {
+        if (newBills != null) {
+            bills = newBills;
+        }else {
+            bills = new ArrayList<>();
+        }
+        this.listType = listType;
         notifyDataSetChanged();
     }
 

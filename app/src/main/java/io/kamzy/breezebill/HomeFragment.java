@@ -125,15 +125,15 @@ public class HomeFragment extends Fragment {
             CURRENT_BALANCE = balanceAmount.getText().toString();
         });
 
-        // Set up RecyclerView
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        billAdapter = new BillAdapter(bills, getContext());
-        recyclerView.setAdapter(billAdapter);
-//       Add a DividerItemDecoration to control spacing
-        DividerItemDecoration divider = new DividerItemDecoration(recyclerView.getContext(), LinearLayoutManager.VERTICAL);
-        recyclerView.addItemDecoration(divider);
+//        // Set up RecyclerView
+//        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
+//        recyclerView.setLayoutManager(layoutManager);
+//        recyclerView.setItemAnimator(new DefaultItemAnimator());
+//        billAdapter = new BillAdapter(getContext(), bills, "ACTIVE" );
+//        recyclerView.setAdapter(billAdapter);
+////       Add a DividerItemDecoration to control spacing
+//        DividerItemDecoration divider = new DividerItemDecoration(recyclerView.getContext(), LinearLayoutManager.VERTICAL);
+//        recyclerView.addItemDecoration(divider);
 
         tabLayout.addTab(tabLayout.newTab().setText("My Bills"));
         tabLayout.addTab(tabLayout.newTab().setText("Others"));
@@ -187,6 +187,11 @@ public class HomeFragment extends Fragment {
 
         });
 
+        createBill.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), CreateBill.class);
+            startActivity(intent);
+        });
+
         });
 
         });
@@ -194,20 +199,20 @@ public class HomeFragment extends Fragment {
 
     // Load bills based on selected tab
     private void loadBills(String tabName) {
-        List<Bills> bills = new ArrayList<>();
-        if (tabName.equals("My Bills")) {
-            bills.add(new Bills("IFT 503 Manual", "3,000"));
-            bills.add(new Bills("Dept. Dues", "₦10,000"));
-        } else if (tabName.equals("Others")) {
-            bills.add(new Bills("Library Fine", "₦500"));
-            bills.add(new Bills("Sports Fee", "₦1,200"));
-        } else if (tabName.equals("View More")) {
-            bills.add(new Bills("Convocation Fee", "₦5,000"));
-            bills.add(new Bills("Health Fee", "₦2,500"));
-        }
-
-        // Update RecyclerView data
-        billAdapter.updateData(bills);
+//        List<Bills> bills = new ArrayList<>();
+//        if (tabName.equals("My Bills")) {
+//            bills.add(new Bills("IFT 503 Manual", "3,000"));
+//            bills.add(new Bills("Dept. Dues", "₦10,000"));
+//        } else if (tabName.equals("Others")) {
+//            bills.add(new Bills("Library Fine", "₦500"));
+//            bills.add(new Bills("Sports Fee", "₦1,200"));
+//        } else if (tabName.equals("View More")) {
+//            bills.add(new Bills("Convocation Fee", "₦5,000"));
+//            bills.add(new Bills("Health Fee", "₦2,500"));
+//        }
+//
+//        // Update RecyclerView data
+//        billAdapter.updateData(bills);
     }
 
 

@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -32,17 +33,24 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
+import io.kamzy.breezebill.SharedViewModels.BillShareViewModels;
 import io.kamzy.breezebill.SharedViewModels.GroupSharedViewModel;
 import io.kamzy.breezebill.SharedViewModels.TokenSharedViewModel;
 import io.kamzy.breezebill.SharedViewModels.UserSharedviewModel;
+import io.kamzy.breezebill.SharedViewModels.UsersGroupsSharedViewModel;
 import io.kamzy.breezebill.SharedViewModels.WalletSharedviewModel;
+import io.kamzy.breezebill.enums.BillStatus;
+import io.kamzy.breezebill.models.Bills;
 import io.kamzy.breezebill.models.Groupss;
 import io.kamzy.breezebill.models.Users;
 import io.kamzy.breezebill.models.Wallet;
+import io.kamzy.breezebill.tools.BillsAPICallback;
 import io.kamzy.breezebill.tools.DataManager;
 import io.kamzy.breezebill.tools.GsonHelper;
+import io.kamzy.breezebill.tools.UsersAPICallback;
 import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -53,11 +61,13 @@ public class Dashboard extends AppCompatActivity {
     BottomNavigationView bottomNavigationView;
     private FragmentManager fragmentManager;
     String token, IdNumber;
-    static GsonHelper gsonHelper;
+    GsonHelper gsonHelper;
     UserSharedviewModel userSharedviewModel;
     WalletSharedviewModel walletSharedviewModel;
     TokenSharedViewModel tokenSharedViewModel;
     GroupSharedViewModel groupSharedViewModel;
+    UsersGroupsSharedViewModel usersGroupsSharedViewModel;
+    BillShareViewModels billShareViewModels;
     private Fragment homeFragment = new HomeFragment();
     private Fragment billFragment = new BillFragment();
     private Fragment groupFragment =  new GroupFragment();
@@ -85,16 +95,75 @@ public class Dashboard extends AppCompatActivity {
 //        initialize Shared view Models
          userSharedviewModel = new ViewModelProvider(this).get(UserSharedviewModel.class);
          walletSharedviewModel = new  ViewModelProvider(this).get(WalletSharedviewModel.class);
-         groupSharedViewModel = new ViewModelProvider(this).get(GroupSharedViewModel.class);
          tokenSharedViewModel = new ViewModelProvider(this).get(TokenSharedViewModel.class);
+         usersGroupsSharedViewModel = new ViewModelProvider(this).get(UsersGroupsSharedViewModel.class);
+         billShareViewModels = new ViewModelProvider(this).get(BillShareViewModels.class);
          tokenSharedViewModel.setToken(token);
 
+         DataManager.getInstance().setToken(token);
+
 //         get & save Users Data
-        getUserAPI("api/users/get-user", IdNumber);
+        getUserAPI("api/users/get-user", IdNumber, new UsersAPICallback<Users>() {
+            @Override
+            public void onSuccess(Users user) {
+                //        get all bills, filter & save
+                getUsersBillsAPI("api/bills/get-bills/"+user.getUser_id(), token, new BillsAPICallback<List<Bills>>() {
+                    @Override
+                    public void onSuccess(List<Bills> allBills) {;
+                        List<Bills> paidBills = new ArrayList<>();
+                        List<Bills> unpaidBills = new ArrayList<>();
+                        for (Bills bill : allBills){
+                            if (bill.getStatus().equals(BillStatus.paid)){
+                                paidBills.add(bill);
+                            }else {
+                                unpaidBills.add(bill);
+                            }
+
+                            if (!paidBills.isEmpty()){
+                                DataManager.getInstance().setPaidBills(paidBills);
+                            }else {
+                                DataManager.getInstance().setPaidBills(null);
+                            }
+
+                            if (!unpaidBills.isEmpty()){
+                                DataManager.getInstance().setUnpaidBills(unpaidBills);
+                            }else {
+                                DataManager.getInstance().setUnpaidBills(null);
+                            }
+                            Log.i("All Bills", allBills.toString());
+                            Log.i("Paid Bills", paidBills.toString());
+                            Log.i("Unpaid Bills", unpaidBills.toString());
+                        }
+
+                    }
+
+                    @Override
+                    public void onFailure(Throwable t) {
+
+                    }
+                });
+
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        });
         getWalletAPI("api/wallet/get_wallet", IdNumber, token);
 
 //        get All Groups & save
-        getAllGroupsAPI("api/groups/all", token);
+        getAllGroupsAPI("api/groups/all", token, new ApiCallback<List<Groupss>>() {
+            @Override
+            public void onSuccess(List<Groupss> groups) {
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Toast.makeText(ctx, "Failed to load groups", Toast.LENGTH_SHORT).show();
+            }
+        });
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
@@ -153,6 +222,7 @@ public class Dashboard extends AppCompatActivity {
             }
         });
 
+
     }
 
 
@@ -175,6 +245,7 @@ public class Dashboard extends AppCompatActivity {
         } else if (itemId == R.id.bills) {
             return billFragment;
         } else if (itemId == R.id.group) {
+
             return groupFragment;
         } else if (itemId == R.id.profile) {
             item.setIcon(R.drawable.profile_filled);
@@ -185,13 +256,38 @@ public class Dashboard extends AppCompatActivity {
     }
 
     private void showFragment(Fragment fragment) {
+
+//        if (fragment == fragmentManager.findFragmentByTag("Group")){
+//            getAllGroupsAPI("api/groups/all", token, new ApiCallback<List<Groupss>>() {
+//                @Override
+//                public void onSuccess(List<Groupss> groups) {
+//                    getUsersGroupsAPI("api/groups/"+DataManager.getInstance().getUsers().getUser_id()+"/user-groups", token, new ApiCallback<List<Groupss>>() {
+//                        @Override
+//                        public void onSuccess(List<Groupss> groups) {
+//
+//                        }
+//
+//                        @Override
+//                        public void onFailure(Throwable t) {
+//                            Toast.makeText(ctx, "Failed to load groups", Toast.LENGTH_SHORT).show();
+//                        }
+//                    });
+//                }
+//
+//                @Override
+//                public void onFailure(Throwable t) {
+//                    Toast.makeText(ctx, "Failed to load groups", Toast.LENGTH_SHORT).show();
+//                }
+//            });
+//
+//        }
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.hide(activeFragment).show(fragment);
         transaction.commit();
         activeFragment = fragment;
     }
 
-    private void getUserAPI (String endpoint, String idNumber){
+    private void getUserAPI (String endpoint, String idNumber, UsersAPICallback<Users> callback){
         FormBody.Builder formbody = new FormBody.Builder()
                 .add("id_number", idNumber);
 
@@ -210,9 +306,23 @@ public class Dashboard extends AppCompatActivity {
                     }else {
                         JSONObject jsonRespone = new JSONObject(responseBody);
                        Users loggedInUser = gsonHelper.parseJSONtoUsers(jsonRespone.toString());
+                        if (callback != null) {
+                            callback.onSuccess(loggedInUser);
+                        }
                        runOnUiThread(()->{
                            userSharedviewModel.setUserData(loggedInUser);
                            DataManager.getInstance().setUsers(loggedInUser);
+                           //         get Users Groups & save
+                           getUsersGroupsAPI("api/groups/"+DataManager.getInstance().getUsers().getUser_id()+"/user-groups", token, new ApiCallback<List<Groupss>>() {
+                               @Override
+                               public void onSuccess(List<Groupss> groups) {
+                               }
+
+                               @Override
+                               public void onFailure(Throwable t) {
+                                   Toast.makeText(ctx, "Failed to load groups", Toast.LENGTH_SHORT).show();
+                               }
+                           });
                         });
                     }
                 }else {
@@ -260,7 +370,7 @@ public class Dashboard extends AppCompatActivity {
         }).start();
     }
 
-    public static void getAllGroupsAPI(String endpoint, String token){
+    public void getAllGroupsAPI(String endpoint, String token, ApiCallback<List<Groupss>> callback){
 
         Request request = new Request.Builder()
                 .url(baseURL + endpoint)
@@ -280,10 +390,94 @@ public class Dashboard extends AppCompatActivity {
                         Log.i("Groups", responseBody);
                         JSONArray jsonRespone = new JSONArray(responseBody);
                         List<Groupss> allGroups = gsonHelper.parseJSONArrayToListGroups(String.valueOf(jsonRespone));
-                        DataManager.getInstance().setAllGroups(allGroups);
+                        if (callback != null) {
+                            callback.onSuccess(allGroups);
+                        }
+                        runOnUiThread(()->{
+                            DataManager.getInstance().setAllGroups(allGroups);
+                        });
                     }
                 }else {
                     Log.i("Group API status", "Error: Couldn't reach group Endpoint");
+                }
+
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+    }
+
+    public void getUsersGroupsAPI(String endpoint, String token, ApiCallback<List<Groupss>> callback){
+
+        Request request = new Request.Builder()
+                .url(baseURL + endpoint)
+                .get()
+                .addHeader("Authorization", "Bearer "+token)
+                .build();
+
+        new Thread(()->{
+            try(Response response = client.newCall(request).execute()){
+                int statusCode=response.code();
+                Log.i("status code", String.valueOf(statusCode));
+                String responseBody = response.body().string();
+                if (response.isSuccessful()){
+                    if (responseBody.equals("[]")){
+                        Log.i("Users Group Status", "No group found");
+                        DataManager.getInstance().setUsersGroups(null);
+                    }else {
+                        Log.i("Groups", responseBody);
+                        JSONArray jsonRespone = new JSONArray(responseBody);
+                        GsonHelper gsonHelper1 = new GsonHelper();
+                        List<Groupss> usersGroups = gsonHelper1.parseJSONArrayToListGroups(String.valueOf(jsonRespone));
+                        if (callback != null) {
+                            callback.onSuccess(usersGroups);
+                        }
+                        runOnUiThread(()->{
+                            DataManager.getInstance().setUsersGroups(usersGroups);
+                            usersGroupsSharedViewModel.setUsersGroupsList(usersGroups);
+                        });
+                    }
+                }else {
+                    Log.i("Group API status", "Error: Couldn't reach group Endpoint");
+                }
+
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+    }
+
+    public void getUsersBillsAPI(String endpoint, String token, BillsAPICallback<List<Bills>> callback){
+
+        Request request = new Request.Builder()
+                .url(baseURL + endpoint)
+                .get()
+                .addHeader("Authorization", "Bearer "+token)
+                .build();
+
+        new Thread(()->{
+            try(Response response = client.newCall(request).execute()){
+                int statusCode=response.code();
+                Log.i("status code", String.valueOf(statusCode));
+                String responseBody = response.body().string();
+                if (response.isSuccessful()){
+                    if (responseBody.equals("[]")){
+                        Log.i("User's Bills Status", "No Bill found");
+                    }else {
+                        Log.i("Bills", responseBody);
+                        JSONArray jsonRespone = new JSONArray(responseBody);
+                        GsonHelper gsonHelper1 = new GsonHelper();
+                        List<Bills> userBills = gsonHelper1.parseJSONArrayToListBills(String.valueOf(jsonRespone));
+                        if (callback != null) {
+                            callback.onSuccess(userBills);
+                        }
+                        runOnUiThread(()->{
+                            DataManager.getInstance().setAllBills(userBills);
+                            billShareViewModels.setBillData(userBills);
+                        });
+                    }
+                }else {
+                    Log.i("Bills API status", "Error: Couldn't reach Bill Endpoint");
                 }
 
             } catch (IOException | JSONException e) {
