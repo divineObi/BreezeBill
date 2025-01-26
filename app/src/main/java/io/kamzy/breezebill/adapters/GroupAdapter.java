@@ -29,13 +29,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.kamzy.breezebill.ApiCallback;
-import io.kamzy.breezebill.Dashboard;
 import io.kamzy.breezebill.GroupFragment;
 import io.kamzy.breezebill.R;
 import io.kamzy.breezebill.enums.BillStatus;
 import io.kamzy.breezebill.models.Bills;
 import io.kamzy.breezebill.models.Groupss;
-import io.kamzy.breezebill.tools.BillsAPICallback;
+import io.kamzy.breezebill.models.UserBillsDTO;
+import io.kamzy.breezebill.tools.UserBillsAPICallback;
 import io.kamzy.breezebill.tools.DataManager;
 import io.kamzy.breezebill.tools.GroupAPICallback;
 import io.kamzy.breezebill.tools.GsonHelper;
@@ -101,12 +101,12 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.groupViewHol
                                 @Override
                                 public void onSuccess(List<Groupss> groups) {
                                     //        get all bills, filter & save
-                                   getUsersBillsAPI("api/bills/get-bills/"+DataManager.getInstance().getUsers().getUser_id(), DataManager.getInstance().getToken(), new BillsAPICallback<List<Bills>>() {
+                                   getUsersBillsAPI("api/bills/get-bills/"+DataManager.getInstance().getUsers().getUser_id(), DataManager.getInstance().getToken(), new UserBillsAPICallback<List<UserBillsDTO>>() {
                                         @Override
-                                        public void onSuccess(List<Bills> allBills) {;
-                                            List<Bills> paidBills = new ArrayList<>();
-                                            List<Bills> unpaidBills = new ArrayList<>();
-                                            for (Bills bill : allBills){
+                                        public void onSuccess(List<UserBillsDTO> allBills) {;
+                                            List<UserBillsDTO> paidBills = new ArrayList<>();
+                                            List<UserBillsDTO> unpaidBills = new ArrayList<>();
+                                            for (UserBillsDTO bill : allBills){
                                                 if (bill.getStatus().equals(BillStatus.paid)){
                                                     paidBills.add(bill);
                                                 }else {
@@ -204,12 +204,12 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.groupViewHol
                                 @Override
                                 public void onSuccess(List<Groupss> groups) {
                                     //        get all bills, filter & save
-                                    getUsersBillsAPI("api/bills/get-bills/"+DataManager.getInstance().getUsers().getUser_id(), DataManager.getInstance().getToken(), new BillsAPICallback<List<Bills>>() {
+                                    getUsersBillsAPI("api/bills/get-bills/"+DataManager.getInstance().getUsers().getUser_id(), DataManager.getInstance().getToken(), new UserBillsAPICallback<List<UserBillsDTO>>() {
                                         @Override
-                                        public void onSuccess(List<Bills> allBills) {;
-                                            List<Bills> paidBills = new ArrayList<>();
-                                            List<Bills> unpaidBills = new ArrayList<>();
-                                            for (Bills bill : allBills){
+                                        public void onSuccess(List<UserBillsDTO> allBills) {;
+                                            List<UserBillsDTO> paidBills = new ArrayList<>();
+                                            List<UserBillsDTO> unpaidBills = new ArrayList<>();
+                                            for (UserBillsDTO bill : allBills){
                                                 if (bill.getStatus().equals(BillStatus.paid)){
                                                     paidBills.add(bill);
                                                 }else {
@@ -408,7 +408,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.groupViewHol
         }).start();
     }
 
-    public void getUsersBillsAPI(String endpoint, String token, BillsAPICallback<List<Bills>> callback){
+    public static void getUsersBillsAPI(String endpoint, String token, UserBillsAPICallback<List<UserBillsDTO>> callback){
 
         Request request = new Request.Builder()
                 .url(baseURL + endpoint)
@@ -428,7 +428,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.groupViewHol
                         Log.i("Bills", responseBody);
                         JSONArray jsonRespone = new JSONArray(responseBody);
                         GsonHelper gsonHelper1 = new GsonHelper();
-                        List<Bills> userBills = gsonHelper1.parseJSONArrayToListBills(String.valueOf(jsonRespone));
+                        List<UserBillsDTO> userBills = gsonHelper1.parseJSONArrayToListUserBills(String.valueOf(jsonRespone));
                         if (callback != null) {
                             callback.onSuccess(userBills);
                         }

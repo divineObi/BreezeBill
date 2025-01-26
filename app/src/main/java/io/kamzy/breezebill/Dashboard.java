@@ -36,7 +36,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.kamzy.breezebill.SharedViewModels.BillShareViewModels;
+import io.kamzy.breezebill.SharedViewModels.UserBillShareViewModels;
 import io.kamzy.breezebill.SharedViewModels.GroupSharedViewModel;
 import io.kamzy.breezebill.SharedViewModels.TokenSharedViewModel;
 import io.kamzy.breezebill.SharedViewModels.UserSharedviewModel;
@@ -45,9 +45,10 @@ import io.kamzy.breezebill.SharedViewModels.WalletSharedviewModel;
 import io.kamzy.breezebill.enums.BillStatus;
 import io.kamzy.breezebill.models.Bills;
 import io.kamzy.breezebill.models.Groupss;
+import io.kamzy.breezebill.models.UserBillsDTO;
 import io.kamzy.breezebill.models.Users;
 import io.kamzy.breezebill.models.Wallet;
-import io.kamzy.breezebill.tools.BillsAPICallback;
+import io.kamzy.breezebill.tools.UserBillsAPICallback;
 import io.kamzy.breezebill.tools.DataManager;
 import io.kamzy.breezebill.tools.GsonHelper;
 import io.kamzy.breezebill.tools.UsersAPICallback;
@@ -67,7 +68,7 @@ public class Dashboard extends AppCompatActivity {
     TokenSharedViewModel tokenSharedViewModel;
     GroupSharedViewModel groupSharedViewModel;
     UsersGroupsSharedViewModel usersGroupsSharedViewModel;
-    BillShareViewModels billShareViewModels;
+    UserBillShareViewModels userBillShareViewModels;
     private Fragment homeFragment = new HomeFragment();
     private Fragment billFragment = new BillFragment();
     private Fragment groupFragment =  new GroupFragment();
@@ -97,7 +98,7 @@ public class Dashboard extends AppCompatActivity {
          walletSharedviewModel = new  ViewModelProvider(this).get(WalletSharedviewModel.class);
          tokenSharedViewModel = new ViewModelProvider(this).get(TokenSharedViewModel.class);
          usersGroupsSharedViewModel = new ViewModelProvider(this).get(UsersGroupsSharedViewModel.class);
-         billShareViewModels = new ViewModelProvider(this).get(BillShareViewModels.class);
+         userBillShareViewModels = new ViewModelProvider(this).get(UserBillShareViewModels.class);
          tokenSharedViewModel.setToken(token);
 
          DataManager.getInstance().setToken(token);
@@ -107,12 +108,12 @@ public class Dashboard extends AppCompatActivity {
             @Override
             public void onSuccess(Users user) {
                 //        get all bills, filter & save
-                getUsersBillsAPI("api/bills/get-bills/"+user.getUser_id(), token, new BillsAPICallback<List<Bills>>() {
+                getUsersBillsAPI("api/bills/get-bills/"+user.getUser_id(), token, new UserBillsAPICallback<List<UserBillsDTO>>() {
                     @Override
-                    public void onSuccess(List<Bills> allBills) {;
-                        List<Bills> paidBills = new ArrayList<>();
-                        List<Bills> unpaidBills = new ArrayList<>();
-                        for (Bills bill : allBills){
+                    public void onSuccess(List<UserBillsDTO> allBills) {;
+                        List<UserBillsDTO> paidBills = new ArrayList<>();
+                        List<UserBillsDTO> unpaidBills = new ArrayList<>();
+                        for (UserBillsDTO bill : allBills){
                             if (bill.getStatus().equals(BillStatus.paid)){
                                 paidBills.add(bill);
                             }else {
@@ -256,31 +257,6 @@ public class Dashboard extends AppCompatActivity {
     }
 
     private void showFragment(Fragment fragment) {
-
-//        if (fragment == fragmentManager.findFragmentByTag("Group")){
-//            getAllGroupsAPI("api/groups/all", token, new ApiCallback<List<Groupss>>() {
-//                @Override
-//                public void onSuccess(List<Groupss> groups) {
-//                    getUsersGroupsAPI("api/groups/"+DataManager.getInstance().getUsers().getUser_id()+"/user-groups", token, new ApiCallback<List<Groupss>>() {
-//                        @Override
-//                        public void onSuccess(List<Groupss> groups) {
-//
-//                        }
-//
-//                        @Override
-//                        public void onFailure(Throwable t) {
-//                            Toast.makeText(ctx, "Failed to load groups", Toast.LENGTH_SHORT).show();
-//                        }
-//                    });
-//                }
-//
-//                @Override
-//                public void onFailure(Throwable t) {
-//                    Toast.makeText(ctx, "Failed to load groups", Toast.LENGTH_SHORT).show();
-//                }
-//            });
-//
-//        }
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.hide(activeFragment).show(fragment);
         transaction.commit();
@@ -447,7 +423,7 @@ public class Dashboard extends AppCompatActivity {
         }).start();
     }
 
-    public void getUsersBillsAPI(String endpoint, String token, BillsAPICallback<List<Bills>> callback){
+    public void getUsersBillsAPI(String endpoint, String token, UserBillsAPICallback<List<UserBillsDTO>> callback){
 
         Request request = new Request.Builder()
                 .url(baseURL + endpoint)
@@ -467,13 +443,13 @@ public class Dashboard extends AppCompatActivity {
                         Log.i("Bills", responseBody);
                         JSONArray jsonRespone = new JSONArray(responseBody);
                         GsonHelper gsonHelper1 = new GsonHelper();
-                        List<Bills> userBills = gsonHelper1.parseJSONArrayToListBills(String.valueOf(jsonRespone));
+                        List<UserBillsDTO> userBills = gsonHelper1.parseJSONArrayToListUserBills(String.valueOf(jsonRespone));
                         if (callback != null) {
                             callback.onSuccess(userBills);
                         }
                         runOnUiThread(()->{
                             DataManager.getInstance().setAllBills(userBills);
-                            billShareViewModels.setBillData(userBills);
+                            userBillShareViewModels.setBillData(userBills);
                         });
                     }
                 }else {

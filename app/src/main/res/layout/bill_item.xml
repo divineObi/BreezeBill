@@ -21,10 +21,9 @@
         android:id="@+id/billAmount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="32dp"
         android:textSize="16sp"
         android:gravity="center"
-        android:layout_weight="1"
         android:textColor="@color/primary_dark"
         android:text="₦0.00" />
 

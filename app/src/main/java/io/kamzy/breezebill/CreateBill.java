@@ -1,5 +1,6 @@
 package io.kamzy.breezebill;
 
+import static io.kamzy.breezebill.adapters.GroupAdapter.getUsersBillsAPI;
 import static io.kamzy.breezebill.tools.Tools.baseURL;
 import static io.kamzy.breezebill.tools.Tools.client;
 
@@ -31,12 +32,16 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import io.kamzy.breezebill.enums.BillCategory;
+import io.kamzy.breezebill.enums.BillStatus;
 import io.kamzy.breezebill.models.Groupss;
+import io.kamzy.breezebill.models.UserBillsDTO;
 import io.kamzy.breezebill.tools.DataManager;
+import io.kamzy.breezebill.tools.UserBillsAPICallback;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -327,7 +332,44 @@ public class CreateBill extends AppCompatActivity {
                         String status = jsonRespone.getString("status");
                         runOnUiThread(()->{
                             if (status.equalsIgnoreCase("Bill Created Successfully")) {
-                              Toast.makeText(ctx, status, Toast.LENGTH_LONG).show();
+                                //        get all bills, filter & save
+                                getUsersBillsAPI("api/bills/get-bills/"+DataManager.getInstance().getUsers().getUser_id(), DataManager.getInstance().getToken(), new UserBillsAPICallback<List<UserBillsDTO>>() {
+                                    @Override
+                                    public void onSuccess(List<UserBillsDTO> allBills) {;
+                                        List<UserBillsDTO> paidBills = new ArrayList<>();
+                                        List<UserBillsDTO> unpaidBills = new ArrayList<>();
+                                        for (UserBillsDTO bill : allBills){
+                                            if (bill.getStatus().equals(BillStatus.paid)){
+                                                paidBills.add(bill);
+                                            }else {
+                                                unpaidBills.add(bill);
+                                            }
+
+                                            if (!paidBills.isEmpty()){
+                                                DataManager.getInstance().setPaidBills(paidBills);
+                                            }else {
+                                                DataManager.getInstance().setPaidBills(null);
+                                            }
+
+                                            if (!unpaidBills.isEmpty()){
+                                                DataManager.getInstance().setUnpaidBills(unpaidBills);
+                                            }else {
+                                                DataManager.getInstance().setUnpaidBills(null);
+                                            }
+                                            Log.i("All Bills", allBills.toString());
+                                            Log.i("Paid Bills", paidBills.toString());
+                                            Log.i("Unpaid Bills", unpaidBills.toString());
+                                        }
+
+                                    }
+
+                                    @Override
+                                    public void onFailure(Throwable t) {
+
+                                    }
+                                });
+
+                                Toast.makeText(ctx, status, Toast.LENGTH_LONG).show();
                               finish();
                             } else {
                                 Toast.makeText(ctx, status, Toast.LENGTH_LONG).show();

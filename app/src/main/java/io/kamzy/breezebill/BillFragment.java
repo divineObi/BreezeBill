@@ -22,12 +22,9 @@ import com.google.android.material.tabs.TabLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.kamzy.breezebill.SharedViewModels.BillShareViewModels;
-import io.kamzy.breezebill.SharedViewModels.UsersGroupsSharedViewModel;
-import io.kamzy.breezebill.adapters.BillAdapter;
-import io.kamzy.breezebill.adapters.GroupAdapter;
-import io.kamzy.breezebill.models.Bills;
-import io.kamzy.breezebill.models.Groupss;
+import io.kamzy.breezebill.SharedViewModels.UserBillShareViewModels;
+import io.kamzy.breezebill.adapters.UserBillAdapter;
+import io.kamzy.breezebill.models.UserBillsDTO;
 import io.kamzy.breezebill.tools.DataManager;
 
 /**
@@ -38,10 +35,10 @@ import io.kamzy.breezebill.tools.DataManager;
 public class BillFragment extends Fragment {
     LinearLayout noBillImage;
     TabLayout billTabs;
-    RecyclerView billRecyclerView;
-    List<Bills> billList;
-    BillShareViewModels billShareViewModels;
-    BillAdapter billAdapter;
+    RecyclerView UserbillRecyclerView;
+    List<UserBillsDTO> UserbillList;
+    UserBillShareViewModels userBillShareViewModels;
+    UserBillAdapter userBillAdapter;
     private String currentTab = "ACTIVE";
 
     // TODO: Rename parameter arguments, choose names that match
@@ -95,26 +92,26 @@ public class BillFragment extends Fragment {
         billTabs = view.findViewById(R.id.billTabLayout);
         billTabs.addTab(billTabs.newTab().setText("ACTIVE"));
         billTabs.addTab(billTabs.newTab().setText("PAID"));
-        billRecyclerView = view.findViewById(R.id.billRecyclerView);
-        billList = DataManager.getInstance().getUnpaidBills();
+        UserbillRecyclerView = view.findViewById(R.id.billRecyclerView);
+        UserbillList = DataManager.getInstance().getUnpaidBills();
 
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
-        billRecyclerView.setLayoutManager(layoutManager);
-        billRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        billAdapter = new BillAdapter(requireContext(), billList, "ACTIVE");
-        billRecyclerView.setAdapter(billAdapter);
-        DividerItemDecoration divider = new DividerItemDecoration(billRecyclerView.getContext(), LinearLayoutManager.VERTICAL);
-        billRecyclerView.addItemDecoration(divider);
+        UserbillRecyclerView.setLayoutManager(layoutManager);
+        UserbillRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        userBillAdapter = new UserBillAdapter(requireContext(), UserbillList, "ACTIVE");
+        UserbillRecyclerView.setAdapter(userBillAdapter);
+        DividerItemDecoration divider = new DividerItemDecoration(UserbillRecyclerView.getContext(), LinearLayoutManager.VERTICAL);
+        UserbillRecyclerView.addItemDecoration(divider);
 
 
-        if (billList!=null && !billList.isEmpty()){
-            billAdapter.updateData(billList, "ACTIVE");
+        if (UserbillList !=null && !UserbillList.isEmpty()){
+            userBillAdapter.updateData(UserbillList, "ACTIVE");
         }else {
-            billAdapter.updateData(new ArrayList<>(), "ACTIVE");
+            userBillAdapter.updateData(new ArrayList<>(), "ACTIVE");
         }
 
-        toggleEmptyState(billList);
+        toggleEmptyState(UserbillList);
 
         billTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -142,31 +139,31 @@ public class BillFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        billShareViewModels = new ViewModelProvider(requireActivity()).get(BillShareViewModels.class);
-        billShareViewModels.getBillData().observe(requireActivity(), bills -> {
+        userBillShareViewModels = new ViewModelProvider(requireActivity()).get(UserBillShareViewModels.class);
+        userBillShareViewModels.getBillData().observe(requireActivity(), bills -> {
 
             noBillImage = view.findViewById(R.id.no_bill_screen);
             billTabs = view.findViewById(R.id.billTabLayout);
-            billRecyclerView = view.findViewById(R.id.billRecyclerView);
-            billList = bills;
+            UserbillRecyclerView = view.findViewById(R.id.billRecyclerView);
+            UserbillList = bills;
 
 
             RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
-            billRecyclerView.setLayoutManager(layoutManager);
-            billRecyclerView.setItemAnimator(new DefaultItemAnimator());
-            billAdapter = new BillAdapter(requireContext(), billList, "ACTIVE");
-            billRecyclerView.setAdapter(billAdapter);
-            DividerItemDecoration divider = new DividerItemDecoration(billRecyclerView.getContext(), LinearLayoutManager.VERTICAL);
-            billRecyclerView.addItemDecoration(divider);
+            UserbillRecyclerView.setLayoutManager(layoutManager);
+            UserbillRecyclerView.setItemAnimator(new DefaultItemAnimator());
+            userBillAdapter = new UserBillAdapter(requireContext(), UserbillList, "ACTIVE");
+            UserbillRecyclerView.setAdapter(userBillAdapter);
+            DividerItemDecoration divider = new DividerItemDecoration(UserbillRecyclerView.getContext(), LinearLayoutManager.VERTICAL);
+            UserbillRecyclerView.addItemDecoration(divider);
 
 
-            if (billList!=null && !billList.isEmpty()){
-                billAdapter.updateData(billList, "ACTIVE");
+            if (UserbillList !=null && !UserbillList.isEmpty()){
+                userBillAdapter.updateData(UserbillList, "ACTIVE");
             }else {
-                billAdapter.updateData(new ArrayList<>(), "ACTIVE");
+                userBillAdapter.updateData(new ArrayList<>(), "ACTIVE");
             }
 
-            toggleEmptyState(billList);
+            toggleEmptyState(UserbillList);
 
             billTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
                 @Override
@@ -210,25 +207,25 @@ public class BillFragment extends Fragment {
 
     private void loadBills(String selectedTab) {
         if (selectedTab.equalsIgnoreCase("ACTIVE")) {
-            billList = DataManager.getInstance().getUnpaidBills();
-            billAdapter.updateData(billList, "ACTIVE");
-            toggleEmptyState(billList);
+            UserbillList = DataManager.getInstance().getUnpaidBills();
+            userBillAdapter.updateData(UserbillList, "ACTIVE");
+            toggleEmptyState(UserbillList);
 
         } else if (selectedTab.equals("PAID")) {
-            billList = DataManager.getInstance().getPaidBills();
-            billAdapter.updateData(billList, "PAID");
-            toggleEmptyState(billList);
+            UserbillList = DataManager.getInstance().getPaidBills();
+            userBillAdapter.updateData(UserbillList, "PAID");
+            toggleEmptyState(UserbillList);
         }
     }
 
 
-    private void toggleEmptyState(List<Bills> billList) {
+    private void toggleEmptyState(List<UserBillsDTO> billList) {
         if (billList != null && !billList.isEmpty()) {
             noBillImage.setVisibility(View.GONE);
-            billRecyclerView.setVisibility(View.VISIBLE);
+            UserbillRecyclerView.setVisibility(View.VISIBLE);
         } else {
             noBillImage.setVisibility(View.VISIBLE);
-            billRecyclerView.setVisibility(View.GONE);
+            UserbillRecyclerView.setVisibility(View.GONE);
         }
     }
 }

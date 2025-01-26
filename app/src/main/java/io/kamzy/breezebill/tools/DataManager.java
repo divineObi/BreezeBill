@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.kamzy.breezebill.models.Bills;
 import io.kamzy.breezebill.models.Groupss;
+import io.kamzy.breezebill.models.UserBillsDTO;
 import io.kamzy.breezebill.models.Users;
 
 public class DataManager {
@@ -11,7 +12,9 @@ public class DataManager {
     private List<Groupss> allGroups, usersGroups;
     private Users users;
     String token;
-    List<Bills> allBills, paidBills, unpaidBills;
+    List<UserBillsDTO> allBills;
+    List<UserBillsDTO> paidBills;
+    List<UserBillsDTO> unpaidBills;
 
     private DataManager() {}
 
@@ -54,27 +57,27 @@ public class DataManager {
         this.token = token;
     }
 
-    public List<Bills> getAllBills() {
+    public List<UserBillsDTO> getAllBills() {
         return allBills;
     }
 
-    public void setAllBills(List<Bills> allBills) {
+    public void setAllBills(List<UserBillsDTO> allBills) {
         this.allBills = allBills;
     }
 
-    public List<Bills> getPaidBills() {
+    public List<UserBillsDTO> getPaidBills() {
         return paidBills;
     }
 
-    public void setPaidBills(List<Bills> paidBills) {
+    public void setPaidBills(List<UserBillsDTO> paidBills) {
         this.paidBills = paidBills;
     }
 
-    public List<Bills> getUnpaidBills() {
+    public List<UserBillsDTO> getUnpaidBills() {
         return unpaidBills;
     }
 
-    public void setUnpaidBills(List<Bills> unpaidBills) {
+    public void setUnpaidBills(List<UserBillsDTO> unpaidBills) {
         this.unpaidBills = unpaidBills;
     }
 }

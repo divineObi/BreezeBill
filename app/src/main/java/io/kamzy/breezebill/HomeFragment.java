@@ -7,9 +7,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
@@ -21,13 +18,12 @@ import android.widget.TextView;
 
 import com.google.android.material.tabs.TabLayout;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import io.kamzy.breezebill.SharedViewModels.TokenSharedViewModel;
 import io.kamzy.breezebill.SharedViewModels.UserSharedviewModel;
 import io.kamzy.breezebill.SharedViewModels.WalletSharedviewModel;
-import io.kamzy.breezebill.adapters.BillAdapter;
+import io.kamzy.breezebill.adapters.UserBillAdapter;
 import io.kamzy.breezebill.models.Bills;
 
 /**
@@ -38,7 +34,7 @@ import io.kamzy.breezebill.models.Bills;
 public class HomeFragment extends Fragment {
     TabLayout tabLayout;
     RecyclerView recyclerView;
-    BillAdapter billAdapter;
+    UserBillAdapter userBillAdapter;
     List<Bills> bills;
     ImageView hideBalance, notificationButton;
     TextView balanceAmount, greeting;

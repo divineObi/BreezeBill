@@ -1,5 +1,6 @@
 package io.kamzy.breezebill.models;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import io.kamzy.breezebill.enums.BillCategory;
@@ -21,9 +22,10 @@ public class Bills {
     private BillType bill_type;
     private String recipient_group;
     private BillCategory bill_category;
+    private LocalDateTime created_at;
 
 
-    public Bills(int bill_id, int created_by, int group_id, String bill_name, String description, double unit_amount, double total_amount, Date due_date, String payment_account, String payment_bank, BillStatus status, BillType bill_type, String recipient_group, BillCategory bill_category) {
+    public Bills(int bill_id, int created_by, int group_id, String bill_name, String description, double unit_amount, double total_amount, Date due_date, String payment_account, String payment_bank, BillStatus status, BillType bill_type, String recipient_group, BillCategory bill_category, LocalDateTime created_at) {
         this.bill_id = bill_id;
         this.created_by = created_by;
         this.group_id = group_id;
@@ -38,6 +40,7 @@ public class Bills {
         this.bill_type = bill_type;
         this.recipient_group = recipient_group;
         this.bill_category = bill_category;
+        this.created_at = created_at;
     }
 
     public Bills() {
@@ -154,5 +157,13 @@ public class Bills {
 
     public void setBill_category(BillCategory bill_category) {
         this.bill_category = bill_category;
+    }
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
     }
 }
