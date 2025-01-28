@@ -73,7 +73,7 @@
                     android:layout_height="wrap_content"
                     android:hint="Account Number"
                     android:inputType="number"
-                    android:text="Kamzy KamKam" />
+                    />
             </com.google.android.material.textfield.TextInputLayout>
             <View
                 android:layout_width="match_parent"
@@ -107,8 +107,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Amount"
-                    android:inputType="numberDecimal"
-                    android:text="Kamzy KamKam" />
+                    android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
             <View
                 android:layout_width="match_parent"
@@ -129,8 +128,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Remark (Optional)"
-                    android:inputType="text"
-                    android:text="Kamzy KamKam" />
+                    android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
             <View
                 android:layout_width="match_parent"

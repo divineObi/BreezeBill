@@ -90,7 +90,11 @@ public class Payment extends AppCompatActivity {
 
             if(accountNumberEt.getText().toString() != null && accountNumberEt.getText().toString().length() == 10){
                 accountNumber = accountNumberEt.getText().toString();
-                getAccountName("api/van/account_name", accountNumber, DataManager.getInstance().getToken());
+                if (accountNumber.equals(DataManager.getInstance().getVAN().getVirtual_account_number())){
+                    accountNumberEt.setError("You can't transfer to your own account");
+                }else {
+                    getAccountName("api/van/account_name", accountNumber, DataManager.getInstance().getToken());
+                }
             }
 
 
@@ -108,7 +112,11 @@ public class Payment extends AppCompatActivity {
 
                 if(s.length() == 10){
                     accountNumber = s.toString();
-                    getAccountName("api/van/account_name", accountNumber, DataManager.getInstance().getToken());
+                    if (accountNumber.equals(DataManager.getInstance().getVAN().getVirtual_account_number())){
+                        accountNumberEt.setError("You can't transfer to your own account");
+                    }else {
+                        getAccountName("api/van/account_name", accountNumber, DataManager.getInstance().getToken());
+                    }
                 }
             }
 
@@ -265,6 +273,88 @@ public class Payment extends AppCompatActivity {
         }).start();
     }
 
+    public void transferAPI(String endpoint, String accountNumber, String amount, String remark){
+        FormBody.Builder formBody = new FormBody.Builder()
+                .add("user_id", String.valueOf(DataManager.getInstance().getUsers().getUser_id()))
+                .add("account_number", accountNumber)
+                .add("amount", amount)
+                .add("description", remark);
+
+        Request request = new Request.Builder()
+                .url(baseURL + endpoint)
+                .post(formBody.build())
+                .addHeader("Authorization", "Bearer "+DataManager.getInstance().getToken())
+                .build();
+
+        new Thread(()->{
+            try(Response response = client.newCall(request).execute()){
+                int statusCode=response.code();
+                Log.i("status code", String.valueOf(statusCode));
+                if (response.isSuccessful()){
+                    String responseBody = response.body() != null ? response.body().string() : "null";
+                    if (responseBody.equals("null")){
+                        Log.i("Transfer Status", "No Response Gotten");
+                    }else {
+                        Log.i("Transfer Status", responseBody);
+                        JSONObject jsonRespone = new JSONObject(responseBody);
+                        String status = jsonRespone.getString("status");
+                        runOnUiThread(()->{
+                            //        get all bills, filter & save
+                            getUsersBillsAPI("api/bills/get-bills/"+DataManager.getInstance().getUsers().getUser_id(), DataManager.getInstance().getToken(), new UserBillsAPICallback<List<UserBillsDTO>>() {
+                                @Override
+                                public void onSuccess(List<UserBillsDTO> allBills) {;
+                                    List<UserBillsDTO> paidBills = new ArrayList<>();
+                                    List<UserBillsDTO> unpaidBills = new ArrayList<>();
+                                    for (UserBillsDTO bill : allBills){
+                                        if (bill.getStatus().equals(BillStatus.paid)){
+                                            paidBills.add(bill);
+                                        }else {
+                                            unpaidBills.add(bill);
+                                        }
+
+                                        if (!paidBills.isEmpty()){
+                                            DataManager.getInstance().setPaidBills(paidBills);
+                                        }else {
+                                            DataManager.getInstance().setPaidBills(null);
+                                        }
+
+                                        if (!unpaidBills.isEmpty()){
+                                            DataManager.getInstance().setUnpaidBills(unpaidBills);
+                                        }else {
+                                            DataManager.getInstance().setUnpaidBills(null);
+                                        }
+                                        Log.i("All Bills", allBills.toString());
+                                        Log.i("Paid Bills", paidBills.toString());
+                                        Log.i("Unpaid Bills", unpaidBills.toString());
+
+                                    }
+
+                                }
+
+                                @Override
+                                public void onFailure(Throwable t) {
+
+                                }
+                            });
+                            getWalletAPI("api/wallet/get_wallet", DataManager.getInstance().getUsers().getId_number(), DataManager.getInstance().getToken());
+                            Toast.makeText(ctx, status, Toast.LENGTH_LONG).show();
+                            finish();
+                        });
+                    }
+                }else {
+                    String errorBody = response.body() != null ? response.body().string() : "No error message provided by the server.";
+                    Log.i("Transfer API status", errorBody);
+                    JSONObject jsonResponse = new JSONObject(errorBody);
+                    String error = jsonResponse.getString("error");
+                    runOnUiThread(()-> Toast.makeText(ctx, error, Toast.LENGTH_LONG).show());
+                }
+
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+    }
+
     public void showPasscodeDialogue(String token) {
         // Use Fragment's context for the BottomSheetDialog
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(ctx);
@@ -368,12 +458,14 @@ public class Payment extends AppCompatActivity {
                if (inputPasscode.equals(DataManager.getInstance().getWallet().getCode())){
                    amount = AmountEt.getText().toString();
                    remark = RemarkEt.getText().toString();
+                   accountNumber = accountNumberEt.getText().toString();
 
                    if (payment_type.equalsIgnoreCase("Bill Payment")){
 //                   call pay bill API
                        payBillAPI("api/bills/pay", bill_id, amount, remark);
                    }else {
 //                   call transfer API
+                       transferAPI("api/wallet/transfer", accountNumber, amount, remark);
                    }
                    bottomSheetDialog.dismiss();
                }else {

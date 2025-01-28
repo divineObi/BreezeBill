@@ -204,6 +204,12 @@ public class HomeFragment extends Fragment {
             startActivity(intent);
         });
 
+        transfer.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), Payment.class);
+            intent.putExtra("payment_type", "Transfer");
+            startActivity(intent);
+        });
+
         });
 
         });
