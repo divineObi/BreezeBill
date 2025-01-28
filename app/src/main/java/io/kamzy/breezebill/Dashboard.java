@@ -41,13 +41,14 @@ import io.kamzy.breezebill.SharedViewModels.GroupSharedViewModel;
 import io.kamzy.breezebill.SharedViewModels.TokenSharedViewModel;
 import io.kamzy.breezebill.SharedViewModels.UserSharedviewModel;
 import io.kamzy.breezebill.SharedViewModels.UsersGroupsSharedViewModel;
+import io.kamzy.breezebill.SharedViewModels.VANShareViewModel;
 import io.kamzy.breezebill.SharedViewModels.WalletSharedviewModel;
 import io.kamzy.breezebill.enums.BillStatus;
-import io.kamzy.breezebill.models.Bills;
 import io.kamzy.breezebill.models.Groupss;
 import io.kamzy.breezebill.models.UserBillsDTO;
 import io.kamzy.breezebill.models.Users;
 import io.kamzy.breezebill.models.Wallet;
+import io.kamzy.breezebill.tools.ApiCallback;
 import io.kamzy.breezebill.tools.UserBillsAPICallback;
 import io.kamzy.breezebill.tools.DataManager;
 import io.kamzy.breezebill.tools.GsonHelper;
@@ -69,6 +70,7 @@ public class Dashboard extends AppCompatActivity {
     GroupSharedViewModel groupSharedViewModel;
     UsersGroupsSharedViewModel usersGroupsSharedViewModel;
     UserBillShareViewModels userBillShareViewModels;
+    VANShareViewModel vanShareViewModel;
     private Fragment homeFragment = new HomeFragment();
     private Fragment billFragment = new BillFragment();
     private Fragment groupFragment =  new GroupFragment();
@@ -99,6 +101,7 @@ public class Dashboard extends AppCompatActivity {
          tokenSharedViewModel = new ViewModelProvider(this).get(TokenSharedViewModel.class);
          usersGroupsSharedViewModel = new ViewModelProvider(this).get(UsersGroupsSharedViewModel.class);
          userBillShareViewModels = new ViewModelProvider(this).get(UserBillShareViewModels.class);
+         vanShareViewModel = new ViewModelProvider(this).get(VANShareViewModel.class);
          tokenSharedViewModel.setToken(token);
 
          DataManager.getInstance().setToken(token);
@@ -143,7 +146,6 @@ public class Dashboard extends AppCompatActivity {
 
                     }
                 });
-
             }
 
             @Override
@@ -152,6 +154,7 @@ public class Dashboard extends AppCompatActivity {
             }
         });
         getWalletAPI("api/wallet/get_wallet", IdNumber, token);
+
 
 //        get All Groups & save
         getAllGroupsAPI("api/groups/all", token, new ApiCallback<List<Groupss>>() {
@@ -244,9 +247,10 @@ public class Dashboard extends AppCompatActivity {
             item.setIcon(R.drawable.home_filled);
             return homeFragment;
         } else if (itemId == R.id.bills) {
+            item.setIcon(R.drawable.bill_filled);
             return billFragment;
         } else if (itemId == R.id.group) {
-
+            item.setIcon(R.drawable.group_filled);
             return groupFragment;
         } else if (itemId == R.id.profile) {
             item.setIcon(R.drawable.profile_filled);
@@ -334,6 +338,7 @@ public class Dashboard extends AppCompatActivity {
                         Wallet userWallet = gsonHelper.parseJSONtoWallet(jsonRespone.toString());
                         runOnUiThread(()->{
                             walletSharedviewModel.setWalletData(userWallet);
+                            DataManager.getInstance().setWallet(userWallet);
                         });
                     }
                 }else {

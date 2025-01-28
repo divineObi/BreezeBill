@@ -7,4 +7,6 @@
     <color name="background">#F4F9FF</color>
     <color name="placeholder_text">#777777</color>
     <color name="red">#C50A0A</color>
+    <color name="green">#00A95B</color>
+    <color name="yellow">#FFC107</color>
 </resources>

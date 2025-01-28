@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:id="@+id/passcodeParentContainer"
     android:orientation="vertical">
 
     <LinearLayout
@@ -33,28 +34,28 @@
 
             <!-- Four dots -->
             <View
-                android:id="@+id/dot1"
+                android:id="@+id/passcodeDot1"
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:background="@drawable/dot_empty"
                 android:layout_margin="5dp"/>
 
             <View
-                android:id="@+id/dot2"
+                android:id="@+id/passcodeDot2"
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:background="@drawable/dot_empty"
                 android:layout_margin="5dp"/>
 
             <View
-                android:id="@+id/dot3"
+                android:id="@+id/passcodeDot3"
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:background="@drawable/dot_empty"
                 android:layout_margin="5dp"/>
 
             <View
-                android:id="@+id/dot4"
+                android:id="@+id/passcodeDot4"
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:background="@drawable/dot_empty"
@@ -72,21 +73,21 @@
             android:useDefaultMargins="true">
 
             <!-- Buttons 1-9 -->
-            <Button android:id="@+id/btn1" style="@style/KeyButtonStyle" android:text="1"/>
-            <Button android:id="@+id/btn2" style="@style/KeyButtonStyle" android:text="2"/>
-            <Button android:id="@+id/btn3" style="@style/KeyButtonStyle" android:text="3"/>
-            <Button android:id="@+id/btn4" style="@style/KeyButtonStyle" android:text="4"/>
-            <Button android:id="@+id/btn5" style="@style/KeyButtonStyle" android:text="5"/>
-            <Button android:id="@+id/btn6" style="@style/KeyButtonStyle" android:text="6"/>
-            <Button android:id="@+id/btn7" style="@style/KeyButtonStyle" android:text="7"/>
-            <Button android:id="@+id/btn8" style="@style/KeyButtonStyle" android:text="8"/>
-            <Button android:id="@+id/btn9" style="@style/KeyButtonStyle" android:text="9"/>
+            <Button android:id="@+id/passcodeBtn1" style="@style/KeyButtonStyle" android:text="1"/>
+            <Button android:id="@+id/passcodeBtn2" style="@style/KeyButtonStyle" android:text="2"/>
+            <Button android:id="@+id/passcodeBtn3" style="@style/KeyButtonStyle" android:text="3"/>
+            <Button android:id="@+id/passcodeBtn4" style="@style/KeyButtonStyle" android:text="4"/>
+            <Button android:id="@+id/passcodeBtn5" style="@style/KeyButtonStyle" android:text="5"/>
+            <Button android:id="@+id/passcodeBtn6" style="@style/KeyButtonStyle" android:text="6"/>
+            <Button android:id="@+id/passcodeBtn7" style="@style/KeyButtonStyle" android:text="7"/>
+            <Button android:id="@+id/passcodeBtn8" style="@style/KeyButtonStyle" android:text="8"/>
+            <Button android:id="@+id/passcodeBtn9" style="@style/KeyButtonStyle" android:text="9"/>
 
             <!-- Placeholder, 0, Backspace -->
             <Space android:layout_width="96dp" android:layout_height="96dp"/>
-            <Button android:id="@+id/btn0" style="@style/KeyButtonStyle" android:text="0"/>
+            <Button android:id="@+id/passcodeBtn0" style="@style/KeyButtonStyle" android:text="0"/>
             <ImageButton
-                android:id="@+id/btnBackspace"
+                android:id="@+id/passcodeBtnBackspace"
                 android:layout_width="96dp"
                 android:layout_height="96dp"
                 style="@style/KeyButtonStyle"

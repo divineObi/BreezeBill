@@ -9,8 +9,10 @@ import java.util.List;
 import io.kamzy.breezebill.models.Bills;
 import io.kamzy.breezebill.models.Groupss;
 import io.kamzy.breezebill.models.Profile;
+import io.kamzy.breezebill.models.Transactions;
 import io.kamzy.breezebill.models.UserBillsDTO;
 import io.kamzy.breezebill.models.Users;
+import io.kamzy.breezebill.models.Virtual_account;
 import io.kamzy.breezebill.models.Wallet;
 
 public class GsonHelper {
@@ -51,4 +53,17 @@ public class GsonHelper {
         Type type = new TypeToken<List<UserBillsDTO>>() {}.getType();
         return gson.fromJson(s, type);
     }
+
+    public Virtual_account parseJSONtoVAN(String string) {
+        Gson gson = new Gson();
+        Type type = new TypeToken<Virtual_account>() {}.getType();
+        return gson.fromJson(string, type);
+    }
+
+    public List<Transactions> parseJSONArrayToListTransactions(String s) {
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<Transactions>>() {}.getType();
+        return gson.fromJson(s, type);
+    }
+
 }

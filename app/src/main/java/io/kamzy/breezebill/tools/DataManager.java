@@ -4,8 +4,11 @@ import java.util.List;
 
 import io.kamzy.breezebill.models.Bills;
 import io.kamzy.breezebill.models.Groupss;
+import io.kamzy.breezebill.models.Transactions;
 import io.kamzy.breezebill.models.UserBillsDTO;
 import io.kamzy.breezebill.models.Users;
+import io.kamzy.breezebill.models.Virtual_account;
+import io.kamzy.breezebill.models.Wallet;
 
 public class DataManager {
     private static DataManager instance;
@@ -15,6 +18,9 @@ public class DataManager {
     List<UserBillsDTO> allBills;
     List<UserBillsDTO> paidBills;
     List<UserBillsDTO> unpaidBills;
+    Wallet wallet;
+    Virtual_account VAN;
+    List<Transactions> allTransactions;
 
     private DataManager() {}
 
@@ -79,5 +85,29 @@ public class DataManager {
 
     public void setUnpaidBills(List<UserBillsDTO> unpaidBills) {
         this.unpaidBills = unpaidBills;
+    }
+
+    public Wallet getWallet() {
+        return wallet;
+    }
+
+    public void setWallet(Wallet wallet) {
+        this.wallet = wallet;
+    }
+
+    public Virtual_account getVAN() {
+        return VAN;
+    }
+
+    public void setVAN(Virtual_account VAN) {
+        this.VAN = VAN;
+    }
+
+    public List<Transactions> getAllTransactions() {
+        return allTransactions;
+    }
+
+    public void setAllTransactions(List<Transactions> allTransactions) {
+        this.allTransactions = allTransactions;
     }
 }

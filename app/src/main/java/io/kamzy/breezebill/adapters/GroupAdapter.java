@@ -28,11 +28,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.kamzy.breezebill.ApiCallback;
+import io.kamzy.breezebill.tools.ApiCallback;
 import io.kamzy.breezebill.GroupFragment;
 import io.kamzy.breezebill.R;
 import io.kamzy.breezebill.enums.BillStatus;
-import io.kamzy.breezebill.models.Bills;
 import io.kamzy.breezebill.models.Groupss;
 import io.kamzy.breezebill.models.UserBillsDTO;
 import io.kamzy.breezebill.tools.UserBillsAPICallback;

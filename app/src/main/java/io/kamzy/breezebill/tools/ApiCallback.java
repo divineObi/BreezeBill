@@ -1,4 +1,4 @@
-package io.kamzy.breezebill;
+package io.kamzy.breezebill.tools;
 
 import java.util.List;
 

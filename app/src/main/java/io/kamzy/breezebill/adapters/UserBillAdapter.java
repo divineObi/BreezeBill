@@ -50,19 +50,19 @@ public class UserBillAdapter extends  RecyclerView.Adapter<UserBillAdapter.BillV
         holder.billNameTextView.setText(bill.getBill_name());
         holder.billAmountTextView.setText(formatAmount(bill.getUnit_amount()));
 
+        holder.payButton.setOnClickListener(v -> {
+            Intent intent = new Intent(context, Payment.class);
+            intent.putExtra("payment_type", "Bill Payment");
+            intent.putExtra("bill_id", String.valueOf(bill.getBill_id()));
+            intent.putExtra("amount", String.valueOf(bill.getUnit_amount()));
+            intent.putExtra("remark", bill.getBill_name());
+            intent.putExtra("payment_account", bill.getPayment_account());
+            Handler handler = new Handler(Looper.getMainLooper());
+            context.startActivity(intent);
+        });
         if (listType.equals("ACTIVE")){
-            holder.payButton.setOnClickListener(v -> {
-                Toast.makeText(context, "Pay Button Clicked", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(context, Payment.class);
-                intent.putExtra("payment_type", "Bill Payment");
-                intent.putExtra("bill_id", String.valueOf(bill.getBill_id()));
-                intent.putExtra("amount", String.valueOf(bill.getUnit_amount()));
-                intent.putExtra("remark", bill.getBill_name());
-                intent.putExtra("payment_account", bill.getPayment_account());
-                Handler handler = new Handler(Looper.getMainLooper());
-                context.startActivity(intent);
-            });
-        }else {
+            holder.payButton.setVisibility(View.VISIBLE);
+        }else if(listType.equals("PAID")) {
             holder.payButton.setVisibility(View.GONE);
         }
 

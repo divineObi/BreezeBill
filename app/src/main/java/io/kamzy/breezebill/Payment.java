@@ -4,13 +4,16 @@ import static io.kamzy.breezebill.adapters.GroupAdapter.getUsersBillsAPI;
 import static io.kamzy.breezebill.tools.Tools.baseURL;
 import static io.kamzy.breezebill.tools.Tools.client;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +23,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -32,7 +36,9 @@ import java.util.List;
 
 import io.kamzy.breezebill.enums.BillStatus;
 import io.kamzy.breezebill.models.UserBillsDTO;
+import io.kamzy.breezebill.models.Wallet;
 import io.kamzy.breezebill.tools.DataManager;
+import io.kamzy.breezebill.tools.GsonHelper;
 import io.kamzy.breezebill.tools.UserBillsAPICallback;
 import okhttp3.FormBody;
 import okhttp3.Request;
@@ -45,6 +51,11 @@ public class Payment extends AppCompatActivity {
     Button confirmButton;
     String payment_type, accountNumber, amount, remark, bill_id, payment_account, accountName;
     TextView accountNameTextView;
+    GsonHelper gsonHelper = new GsonHelper();
+    StringBuilder passcode = new StringBuilder();
+    String inputPasscode;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,25 +119,22 @@ public class Payment extends AppCompatActivity {
         });
 
         confirmButton.setOnClickListener(v -> {
-           amount = AmountEt.getText().toString();
-           accountNumber = accountNumberEt.getText().toString();
-           accountName = accountNameTextView.getText().toString();
-           remark = RemarkEt.getText().toString();
+            amount = AmountEt.getText().toString();
+            accountNumber = accountNumberEt.getText().toString();
+            accountName = accountNameTextView.getText().toString();
+            remark = RemarkEt.getText().toString();
 
-           if (amount.isEmpty()) AmountEt.setError("Enter Amount");
-           if (accountNumber.isEmpty()) accountNumberEt.setError("Enter Account Number");
-           if (remark.isEmpty()) remark = "";
+            if (amount.isEmpty()) AmountEt.setError("Enter Amount");
+            if (accountNumber.isEmpty()) accountNumberEt.setError("Enter Account Number");
+            if (remark.isEmpty()) remark = "";
 
-           if (accountName.equalsIgnoreCase("Account not found")){
-               Toast.makeText(ctx, "Account not found", Toast.LENGTH_LONG).show();
-           }else {
-               if (payment_type.equalsIgnoreCase("Bill Payment")){
-//                   call pay bill API
-                   payBillAPI("api/bills/pay", bill_id, amount, remark);
-               }else {
-//                   call tarnsfer API
-               }
-           }
+            if (accountName.equalsIgnoreCase("Account not found")){
+                Toast.makeText(ctx, "Account not found", Toast.LENGTH_LONG).show();
+            }else {
+                showPasscodeDialogue(DataManager.getInstance().getToken());
+
+            }
+
         });
 
     }
@@ -193,8 +201,8 @@ public class Payment extends AppCompatActivity {
             try(Response response = client.newCall(request).execute()){
                 int statusCode=response.code();
                 Log.i("status code", String.valueOf(statusCode));
-                String responseBody = response.body() != null ? response.body().string() : "null";
                 if (response.isSuccessful()){
+                    String responseBody = response.body() != null ? response.body().string() : "null";
                     if (responseBody.equals("null")){
                         Log.i("Payment Status", "No Response Gotten");
                     }else {
@@ -229,6 +237,7 @@ public class Payment extends AppCompatActivity {
                                         Log.i("All Bills", allBills.toString());
                                         Log.i("Paid Bills", paidBills.toString());
                                         Log.i("Unpaid Bills", unpaidBills.toString());
+                                        finish();
                                     }
 
                                 }
@@ -238,19 +247,140 @@ public class Payment extends AppCompatActivity {
 
                                 }
                             });
-
+                            getWalletAPI("api/wallet/get_wallet", DataManager.getInstance().getUsers().getId_number(), DataManager.getInstance().getToken());
                             Toast.makeText(ctx, status, Toast.LENGTH_LONG).show();
                         });
                     }
                 }else {
-                    Log.i("Payment Status API status", "Error: Couldn't reach Payment Endpoint");
-                    Log.i("Payment Status API status", responseBody);
-                    runOnUiThread(()-> Toast.makeText(ctx, responseBody, Toast.LENGTH_LONG).show());
+                    String errorBody = response.body() != null ? response.body().string() : "No error message provided by the server.";
+                    Log.i("Payment Status API status", errorBody);
+                    JSONObject jsonResponse = new JSONObject(errorBody);
+                    String error = jsonResponse.getString("error");
+                    runOnUiThread(()-> Toast.makeText(ctx, error, Toast.LENGTH_LONG).show());
                 }
 
             } catch (IOException | JSONException e) {
                 throw new RuntimeException(e);
             }
         }).start();
+    }
+
+    public void showPasscodeDialogue(String token) {
+        // Use Fragment's context for the BottomSheetDialog
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(ctx);
+
+// Inflate the custom layout for the bottom sheet
+        View bottomSheetView = LayoutInflater.from(ctx).inflate(
+                R.layout.passcode_bottom_dialogue, // Custom layout file
+                null // Use null since you'll set it as the dialog content
+        );
+
+// Access views from the bottomSheetView
+        View[] dots = new View[]{
+                bottomSheetView.findViewById(R.id.passcodeDot1),
+                bottomSheetView.findViewById(R.id.passcodeDot2),
+                bottomSheetView.findViewById(R.id.passcodeDot3),
+                bottomSheetView.findViewById(R.id.passcodeDot4)
+        };
+
+// Set up keypad buttons
+        int[] buttonIds = {
+                R.id.passcodeBtn0, R.id.passcodeBtn1, R.id.passcodeBtn2, R.id.passcodeBtn3,
+                R.id.passcodeBtn4, R.id.passcodeBtn5, R.id.passcodeBtn6, R.id.passcodeBtn7,
+                R.id.passcodeBtn8, R.id.passcodeBtn9
+        };
+
+        View.OnClickListener numberClickListener = v -> {
+            if (passcode.length() < 4) {
+                passcode.append(((Button) v).getText().toString());
+                updateDots(dots, bottomSheetDialog);
+            }
+        };
+
+        for (int id : buttonIds) {
+            bottomSheetView.findViewById(id).setOnClickListener(numberClickListener);
+        }
+
+// Backspace button
+        bottomSheetView.findViewById(R.id.passcodeBtnBackspace).setOnClickListener(v -> {
+            if (passcode.length() > 0) {
+                passcode.deleteCharAt(passcode.length() - 1);
+                updateDots(dots, bottomSheetDialog);
+            }
+        });
+
+// Set the content view for the dialog and show it
+        bottomSheetDialog.setContentView(bottomSheetView);
+        bottomSheetDialog.show();
+//        closeButton.setOnClickListener(v -> {
+//            // Dismiss the dialog after saving
+//            bottomSheetDialog.dismiss();
+//
+//        });
+
+
+    }
+
+
+    private void getWalletAPI (String endpoint, String idNumber, String token){
+        FormBody.Builder formbody = new FormBody.Builder()
+                .add("id_number", idNumber);
+
+        Request request = new Request.Builder()
+                .url(baseURL + endpoint)
+                .post(formbody.build())
+                .addHeader("Authorization", "Bearer "+token)
+                .build();
+
+        new Thread(()->{
+            try(Response response = client.newCall(request).execute()){
+                int statusCode=response.code();
+                Log.i("status code", String.valueOf(statusCode));
+                String responseBody =response.body() != null ? response.body().string() : "null";
+                if (response.isSuccessful()){
+                    if (responseBody.equals("null")){
+                        Log.i("Wallet Status", "Not Found");
+                    }else {
+                        JSONObject jsonRespone = new JSONObject(responseBody);
+                        Wallet userWallet = gsonHelper.parseJSONtoWallet(jsonRespone.toString());
+                        runOnUiThread(()->{
+                            DataManager.getInstance().setWallet(userWallet);
+                        });
+                    }
+                }else {
+                    Log.i("Wallet API Status", "Error Connecting to Wallet Endpoint");
+                }
+
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+    }
+
+    private void updateDots(View[] dots, BottomSheetDialog bottomSheetDialog) {
+        for (int i = 0; i < dots.length; i++) {
+            dots[i].setBackgroundResource(i < passcode.length() ? R.drawable.dot_filled : R.drawable.dot_empty);
+        }
+
+        if (passcode.length() == 4) {
+            if (inputPasscode == null){
+                inputPasscode = passcode.toString();
+               if (inputPasscode.equals(DataManager.getInstance().getWallet().getCode())){
+                   amount = AmountEt.getText().toString();
+                   remark = RemarkEt.getText().toString();
+
+                   if (payment_type.equalsIgnoreCase("Bill Payment")){
+//                   call pay bill API
+                       payBillAPI("api/bills/pay", bill_id, amount, remark);
+                   }else {
+//                   call transfer API
+                   }
+                   bottomSheetDialog.dismiss();
+               }else {
+                   Toast.makeText(ctx, "Incorrect Passcode", Toast.LENGTH_LONG).show();
+
+               }
+            }
+        }
     }
 }

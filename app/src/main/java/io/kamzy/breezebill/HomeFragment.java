@@ -1,5 +1,8 @@
 package io.kamzy.breezebill;
 
+import static io.kamzy.breezebill.tools.Tools.baseURL;
+import static io.kamzy.breezebill.tools.Tools.client;
+
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -9,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,13 +22,23 @@ import android.widget.TextView;
 
 import com.google.android.material.tabs.TabLayout;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.List;
 
 import io.kamzy.breezebill.SharedViewModels.TokenSharedViewModel;
 import io.kamzy.breezebill.SharedViewModels.UserSharedviewModel;
+import io.kamzy.breezebill.SharedViewModels.VANShareViewModel;
 import io.kamzy.breezebill.SharedViewModels.WalletSharedviewModel;
 import io.kamzy.breezebill.adapters.UserBillAdapter;
 import io.kamzy.breezebill.models.Bills;
+import io.kamzy.breezebill.models.Virtual_account;
+import io.kamzy.breezebill.tools.DataManager;
+import io.kamzy.breezebill.tools.GsonHelper;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -37,13 +51,17 @@ public class HomeFragment extends Fragment {
     UserBillAdapter userBillAdapter;
     List<Bills> bills;
     ImageView hideBalance, notificationButton;
-    TextView balanceAmount, greeting;
+    TextView balanceAmount, greeting, accountNumber, transactionHistory;
     String CURRENT_BALANCE;
     boolean isBalanceHidden = false; // Track balance state
     UserSharedviewModel userSharedviewModel;
     WalletSharedviewModel walletSharedviewModel;
     TokenSharedViewModel tokenSharedViewModel;
+    VANShareViewModel vanShareViewModel;
     ImageButton addFunds, createBill, createGroup, transfer;
+    // Resource IDs for clarity
+    final int HIDDEN_BALANCE_ICON = R.drawable.hide_balance;
+    final int VISIBLE_BALANCE_ICON = R.drawable.eye;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -100,11 +118,13 @@ public class HomeFragment extends Fragment {
         tokenSharedViewModel.getToken().observe(getViewLifecycleOwner(), token ->{
 
         greeting = view.findViewById(R.id.userGreeting);
+        accountNumber = view.findViewById(R.id.UserAccountNumber);
         hideBalance = view.findViewById(R.id.hide_balance);
         balanceAmount = view.findViewById(R.id.balanceAmount);
         notificationButton = view.findViewById(R.id.notificationIcon);
         tabLayout = view.findViewById(R.id.tabLayout);
         addFunds = view.findViewById(R.id.fundWalletButton);
+        transactionHistory = view.findViewById(R.id.TransactionHistoryLabel);
         createBill = view.findViewById(R.id.createBillButton);
         createGroup = view.findViewById(R.id.createGroupButton);
         transfer = view.findViewById(R.id.transferButton);
@@ -113,6 +133,7 @@ public class HomeFragment extends Fragment {
         userSharedviewModel = new ViewModelProvider(requireActivity()).get(UserSharedviewModel.class);
         userSharedviewModel.getUserData().observe(getViewLifecycleOwner(), users -> {
             greeting.setText("Hi "+users.getFirst_name());
+            getVanAPI("api/van/get/" + users.getUser_id(), token);
 
 
         walletSharedviewModel = new ViewModelProvider(requireActivity()).get(WalletSharedviewModel.class);
@@ -121,15 +142,7 @@ public class HomeFragment extends Fragment {
             CURRENT_BALANCE = balanceAmount.getText().toString();
         });
 
-//        // Set up RecyclerView
-//        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
-//        recyclerView.setLayoutManager(layoutManager);
-//        recyclerView.setItemAnimator(new DefaultItemAnimator());
-//        billAdapter = new BillAdapter(getContext(), bills, "ACTIVE" );
-//        recyclerView.setAdapter(billAdapter);
-////       Add a DividerItemDecoration to control spacing
-//        DividerItemDecoration divider = new DividerItemDecoration(recyclerView.getContext(), LinearLayoutManager.VERTICAL);
-//        recyclerView.addItemDecoration(divider);
+
 
         tabLayout.addTab(tabLayout.newTab().setText("My Bills"));
         tabLayout.addTab(tabLayout.newTab().setText("Others"));
@@ -157,9 +170,7 @@ public class HomeFragment extends Fragment {
 
         hideBalance.setOnClickListener(v ->{
 
-            // Resource IDs for clarity
-            final int HIDDEN_BALANCE_ICON = R.drawable.hide_balance;
-            final int VISIBLE_BALANCE_ICON = R.drawable.eye;
+
             // Toggle the state
             isBalanceHidden = !isBalanceHidden;
             int iconResId = isBalanceHidden ? VISIBLE_BALANCE_ICON : HIDDEN_BALANCE_ICON;
@@ -188,9 +199,28 @@ public class HomeFragment extends Fragment {
             startActivity(intent);
         });
 
+        transactionHistory.setOnClickListener(v ->{
+            Intent intent = new Intent(getContext(), TransactionsPage.class);
+            startActivity(intent);
         });
 
         });
+
+        });
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        balanceAmount.setText(String.valueOf(DataManager.getInstance().getWallet().getBalance()));
+        CURRENT_BALANCE = balanceAmount.getText().toString();
+        int iconResId = isBalanceHidden ? VISIBLE_BALANCE_ICON : HIDDEN_BALANCE_ICON;
+        if (iconResId == VISIBLE_BALANCE_ICON){
+            balanceAmount.setText("******");
+        } else {
+            balanceAmount.setText(CURRENT_BALANCE);
+        }
+        hideBalance.setImageResource(iconResId);
     }
 
     // Load bills based on selected tab
@@ -209,6 +239,41 @@ public class HomeFragment extends Fragment {
 //
 //        // Update RecyclerView data
 //        billAdapter.updateData(bills);
+    }
+
+    private void getVanAPI (String endpoint, String token){
+
+        Request request = new Request.Builder()
+                .url(baseURL + endpoint)
+                .get()
+                .addHeader("Authorization", "Bearer "+token)
+                .build();
+
+        new Thread(()->{
+            try(Response response = client.newCall(request).execute()){
+                int statusCode=response.code();
+                Log.i("status code", String.valueOf(statusCode));
+                String responseBody =response.body() != null ? response.body().string() : "null";
+                if (response.isSuccessful()){
+                    if (responseBody.equals("null")){
+                        Log.i("VAN Status", "Not Found");
+                    }else {
+                        JSONObject jsonRespone = new JSONObject(responseBody);
+                        GsonHelper gsonHelper = new GsonHelper();
+                        Virtual_account VAN = gsonHelper.parseJSONtoVAN(jsonRespone.toString());
+                        DataManager.getInstance().setVAN(VAN);
+                        requireActivity().runOnUiThread(()->{
+                            accountNumber.setText("Account Number: " + VAN.getVirtual_account_number());
+                        });
+                    }
+                }else {
+                    Log.i("VAN API Status", "Error Connecting to Wallet Endpoint");
+                }
+
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
     }
 
 

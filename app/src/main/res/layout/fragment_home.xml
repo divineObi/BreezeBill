@@ -35,7 +35,7 @@
                     android:textStyle="bold"/>
 
                 <TextView
-                    android:id="@+id/userMessage"
+                    android:id="@+id/UserAccountNumber"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Welcome, let's start making payments"
