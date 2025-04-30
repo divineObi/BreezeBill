@@ -299,6 +299,7 @@ public class Payment extends AppCompatActivity {
                         JSONObject jsonRespone = new JSONObject(responseBody);
                         String status = jsonRespone.getString("status");
                         runOnUiThread(()->{
+                            getWalletAPI("api/wallet/get_wallet", DataManager.getInstance().getUsers().getId_number(), DataManager.getInstance().getToken());
                             //        get all bills, filter & save
                             getUsersBillsAPI("api/bills/get-bills/"+DataManager.getInstance().getUsers().getUser_id(), DataManager.getInstance().getToken(), new UserBillsAPICallback<List<UserBillsDTO>>() {
                                 @Override
@@ -328,6 +329,7 @@ public class Payment extends AppCompatActivity {
                                         Log.i("Unpaid Bills", unpaidBills.toString());
 
                                     }
+                                    finish();
 
                                 }
 
@@ -336,9 +338,7 @@ public class Payment extends AppCompatActivity {
 
                                 }
                             });
-                            getWalletAPI("api/wallet/get_wallet", DataManager.getInstance().getUsers().getId_number(), DataManager.getInstance().getToken());
                             Toast.makeText(ctx, status, Toast.LENGTH_LONG).show();
-                            finish();
                         });
                     }
                 }else {

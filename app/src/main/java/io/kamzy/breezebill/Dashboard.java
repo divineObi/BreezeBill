@@ -370,7 +370,8 @@ public class Dashboard extends AppCompatActivity {
                     }else {
                         Log.i("Groups", responseBody);
                         JSONArray jsonRespone = new JSONArray(responseBody);
-                        List<Groupss> allGroups = gsonHelper.parseJSONArrayToListGroups(String.valueOf(jsonRespone));
+                        GsonHelper gsonHelper1 = new GsonHelper();
+                        List<Groupss> allGroups = gsonHelper1.parseJSONArrayToListGroups(String.valueOf(jsonRespone));
                         if (callback != null) {
                             callback.onSuccess(allGroups);
                         }

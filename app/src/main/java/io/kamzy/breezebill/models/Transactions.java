@@ -16,7 +16,7 @@ public class Transactions {
     private double amount;
     private String description;
     private PaymentMethod payment_method;
-    private int related_bill_id;
+    private Integer related_bill_id;
     private TransactionStatus status;
     private Date created_at;
 
@@ -107,11 +107,11 @@ public class Transactions {
         this.payment_method = payment_method;
     }
 
-    public int getRelated_bill_id() {
+    public Integer getRelated_bill_id() {
         return related_bill_id;
     }
 
-    public void setRelated_bill_id(int related_bill_id) {
+    public void setRelated_bill_id(Integer related_bill_id) {
         this.related_bill_id = related_bill_id;
     }
 
